@@ -6,7 +6,7 @@ Created by Hannah Khafif, Tyler Royere, Fizzah Shaikh, & Nicolas Tedori
 
 ## Contents
 
-1. Data
+1. [Data](https://github.com/niclad/lba-simulation#data)
 
 ### Data
 
