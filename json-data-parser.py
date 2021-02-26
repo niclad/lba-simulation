@@ -77,6 +77,7 @@ def parseJSON(path, fileName):
   headers = []
   dheaders = 0
   currHeaders = []
+  lineCount = 0
 
   for idx, line in enumerate(jsonLines):
     jsonContents = json.loads(line)
@@ -102,7 +103,9 @@ def parseJSON(path, fileName):
         currHeaders.append(key)
 
       # print("> {} {}".format(key, val))
-
+    lineCount = idx + 1
+  
+  print('Processed {} data entries.'.format(lineCount))
   print('{} different headers found!'.format(dheaders))
   
   # for (key, val) in jsonContents.items():
