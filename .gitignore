@@ -1,2 +1,8 @@
 # static file names to ignore
 anon_jobs_2020-08.json
+.vscode/settings.json
+test/test.txt
+test/TEST.txt
+.gitignore
+test/test.json
+.gitignore
