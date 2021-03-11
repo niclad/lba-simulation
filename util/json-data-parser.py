@@ -102,7 +102,7 @@ def parseJSON(path, fileName):
       else:
         currHeaders.append(key)
 
-      # print("> {} {}".format(key, val))
+      print("> {} {}".format(key, val))
     lineCount = idx + 1
   
   print('Processed {} data entries.'.format(lineCount))
@@ -118,3 +118,9 @@ path, fileName = getFilePath()
 # jsonContents = getJSON(path, fileName)
 # print(json.dumps(jsonContents, indent=4))
 parseJSON(path, fileName)
+
+############
+# TODO:
+# [x] Get all data from JSON
+# [x] Get JSON keys to use as headers
+# [ ] Save as readable data format (csv)
