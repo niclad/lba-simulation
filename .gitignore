@@ -12,3 +12,4 @@ data/feb2nov_deidf.pkl
 
 # CPP files
 *.o
+*.out
