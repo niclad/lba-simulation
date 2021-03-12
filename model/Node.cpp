@@ -1,8 +1,8 @@
 #include "Node.h"
 
-ServiceNode::ServiceNode(unsigned int id) : id{id}, util{0}, maxQueueSz{0} {}
+ServiceNode::ServiceNode(int id) : id{id}, util{0}, maxQueueSz{0} {}
 
-ServiceNode::ServiceNode(unsigned int id, size_t maxQueueSz)
+ServiceNode::ServiceNode(int id, size_t maxQueueSz)
     : id{id}, util{0}, maxQueueSz{maxQueueSz} {}
 
 void ServiceNode::updateUtil(int nJobs, double departure,

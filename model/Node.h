@@ -14,7 +14,7 @@ class ServiceNode {
    *
    * @param id The ID of the Service Node
    */
-  ServiceNode(unsigned int id);
+  ServiceNode(int id);
 
   /**
    * @brief Construct a new Service Node object with given ID and queue size
@@ -22,7 +22,7 @@ class ServiceNode {
    * @param id The Service Node's ID
    * @param maxQueueSz The maximum size of the Service Node's queue
    */
-  ServiceNode(unsigned int id, size_t maxQueueSz);
+  ServiceNode(int id, size_t maxQueueSz);
 
   // ~ServiceNode();
 
@@ -61,9 +61,10 @@ class ServiceNode {
 
  private:
   // A service nodes indentifying number
-  unsigned int id;
+  int id;
 
-  // The servers current utilization
+  // The servers current utilization 
+  // (could also indicate a Server's "weight")
   double util;
 
   // The actual queue object
