@@ -43,7 +43,6 @@ The files in this repo are outlined below
    1. [anon_jobs_2020-08.json.bz2](./data/anon_jobs_2020-08.json.bz2) - this is one month of data from the Eagle supercomputer.
    2. [discovery-data.csv.bz2](./data/discovery-data.csv.bz2) - this is the Discovery cluster data for about 8 months of submitted jobs.
    3. [test_data.json](./data/test_data.json) - primarily used to test the [JSON data parser utility](./util/json-data-parser.py).
-   4. [test.csv](./data/test.csv) - a truncated version of the whole discovery dataset, primarily used for testing.
 2. [model](./model) (See [here](#model).)
    1. [Dispatcher.cpp](./model/Dispatcher.cpp) and [Dispatcher.h](./model/Dispatcher.h) - this is a class for the model's dispatcher.
    2. [LoadBalancing.cpp](./model/LoadBalancing.cpp) and [LoadBalancing.h](./model/LoadBalancing.h) - all the load-balancing algorithms can be implemented here. A Dispatcher is initialized with one of these.
