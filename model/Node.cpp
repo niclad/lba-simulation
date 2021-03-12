@@ -11,8 +11,8 @@ void ServiceNode::updateUtil(int nJobs, double departure,
 }
 
 bool ServiceNode::enterQueue(int job) {
-  if (q.size() < maxQueueSz) {
-    q.push(static_cast<double>(job));
+  if (jobQueue.size() < maxQueueSz) {
+    jobQueue.push(static_cast<double>(job));
     return true;
   }
 

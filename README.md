@@ -49,7 +49,7 @@ The files in this repo are outlined below
    3. [Makefile](./model/Makefile) - this will compile the code into a temporary test program.
    4. [Node.cpp](./model/Node.cpp) and [Node.h](./model/Node.h) - this represents a service node in the model.
    5. [temp.cpp](./model/temp.cpp) - a temporary code file to test imports and compilation.
-3. [util](./util)(See [Scripts](#scripts).)
+3. [util](./util) (See [Scripts](#scripts).)
      1. [json-data-parser.py](./util/json-data-parser.py) - this parses a JSON file with multiple JSON entries, formatting data.
      2. [read-discovery-data.py](./util/read-discovery-data.py) - this converts the discovery data to a useable format.
 

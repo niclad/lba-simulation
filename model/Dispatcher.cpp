@@ -1,6 +1,6 @@
 #include "Dispatcher.h"
 
-Dispatcher::Dispatcher(int (*func)(int), std::vector<ServiceNode> nodes)
+Dispatcher::Dispatcher(int (*func)(std::vector<ServiceNode>), std::vector<ServiceNode> nodes)
     : lbFunc{func}, nodeList{nodes} {}
 
-int Dispatcher::dispatchJob(int job) { return lbFunc(job); }
+int Dispatcher::dispatchJob() { return lbFunc(nodeList); }
