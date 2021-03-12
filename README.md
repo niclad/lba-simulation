@@ -11,7 +11,7 @@ Created by Hannah Khafif, Tyler Royere, Fizzah Shaikh, & Nicolas Tedori
 4. [Model](#model)
 5. [Scripts](#scripts)
 2. [Files](#files)
-7. [Additional Info](#)
+6. [Additional Info](#additional-info)
 
 ### Background
 
@@ -56,3 +56,19 @@ The files in this repo are outlined below
 
 
 ## Additional Info 
+
+### Unzipping `.bz2`
+
+Some files are compressed using `bzip2`. See [here](https://linux.die.net/man/1/bzip2) for more info.
+
+The quick and dirty of it is:
+
+To compress a file
+```
+$ bzip2 -z filename.csv
+```
+
+To uncompress a file with `.bz2`
+```
+$ bzip2 -d filename.csv.bz2
+```
