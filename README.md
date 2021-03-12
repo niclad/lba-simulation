@@ -11,6 +11,7 @@ Created by Hannah Khafif, Tyler Royere, Fizzah Shaikh, & Nicolas Tedori
 4. [Model](#model)
 5. [Scripts](#scripts)
 2. [Files](#files)
+7. [Additional Info](#)
 
 ### Background
 
@@ -30,6 +31,10 @@ These are the C++ files for the simulation to run. Currently (2020-03-12) these 
 
 ### Scripts
 
+Currently there are two utility scripts. `json-data-parser.py` is used to parse the NREL data (as that is in a JSON-like format) and build a file that can be parsed in a simpler way via C++. This script is currently not fully functional and should not be used under that assumption. See the code for more info.
+
+Similarly, `read-discovery-data.py` is designed specifically to remove unnecessary features of the data, simplifying the file. The original dataset (not included in this repo), was given as a pickled dataframe, so this needed to be read and reformatted (which is what this script does).
+
 ### Files
 
 The files in this repo are outlined below
@@ -45,3 +50,9 @@ The files in this repo are outlined below
    3. [Makefile](./model/Makefile) - this will compile the code into a temporary test program.
    4. [Node.cpp](./model/Node.cpp) and [Node.h](./model/Node.h) - this represents a service node in the model.
    5. [temp.cpp](./model/temp.cpp) - a temporary code file to test imports and compilation.
+3. [util](./util)(See [Scripts](#scripts).)
+     1. [json-data-parser.py](./util/json-data-parser.py) - this parses a JSON file with multiple JSON entries, formatting data.
+     2. [read-discovery-data.py](./util/read-discovery-data.py) - this converts the discovery data to a useable format.
+
+
+## Additional Info 
