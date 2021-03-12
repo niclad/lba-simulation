@@ -1,4 +1,3 @@
 #include "LoadBalancing.h"
 
-void
-lba::roundrobin() {}
+int lba::roundrobin(std::vector<ServiceNode> nodeList) { return -1; }
