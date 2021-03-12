@@ -7,14 +7,28 @@ Created by Hannah Khafif, Tyler Royere, Fizzah Shaikh, & Nicolas Tedori
 ## Contents
 
 1. [Background](#background)
-2. [Files](#files)
 3. [Data](#data)
 4. [Model](#model)
 5. [Scripts](#scripts)
+2. [Files](#files)
 
 ### Background
 
 This project aims to evaluate multiple load-balancing algorithms on the effect of server utilization of multiple different server models.
+
+### Data
+
+This contains all the data files used for the simulation.
+
+Source for the real world data come from NREL's Eagle supercomputer. Link to the data [here](https://data.nrel.gov/submissions/152).
+
+Additionally, data from Northeastern University's Discovery cluster was provided to us. This data is not publicly available. More info available [here](https://rc.northeastern.edu/). This is the `discovery-data.csv.bz2` file, which is a trimmed down version of the original dataset featuring only relevant information necessary for this project.
+
+### Model
+
+These are the C++ files for the simulation to run. Currently (2020-03-12) these files are mostly just a skeleton for a basic implementation.
+
+### Scripts
 
 ### Files
 
@@ -31,18 +45,3 @@ The files in this repo are outlined below
    3. [Makefile](./model/Makefile) - this will compile the code into a temporary test program.
    4. [Node.cpp](./model/Node.cpp) and [Node.h](./model/Node.h) - this represents a service node in the model.
    5. [temp.cpp](./model/temp.cpp) - a temporary code file to test imports and compilation.
-
-
-### Data
-
-This contains all the data files used for the simulation.
-
-Source for the real world data come from NREL's Eagle supercomputer. Link to the data [here](https://data.nrel.gov/submissions/152).
-
-Additionally, data from Northeastern University's Discovery cluster was provided to us. This data is not publicly available. More info available [here](https://rc.northeastern.edu/). This is the `discovery-data.csv.bz2` file, which is a trimmed down version of the original dataset featuring only relevant information necessary for this project.
-
-### Model
-
-These are the C++ files for the simulation to run. Currently (2020-03-12) these files are mostly just a skeleton for a basic implementation.
-
-### Scripts
