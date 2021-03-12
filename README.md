@@ -10,6 +10,7 @@ Created by Hannah Khafif, Tyler Royere, Fizzah Shaikh, & Nicolas Tedori
 2. [Files](#files)
 3. [Data](#data)
 4. [Model](#model)
+5. [Scripts](#scripts)
 
 ### Background
 
@@ -26,7 +27,11 @@ The files in this repo are outlined below
    4. [test.csv](./data/test.csv) - a truncated version of the whole discovery dataset, primarily used for testing.
 2. [model](./model) (See [here](#model).)
    1. [Dispatcher.cpp](./model/Dispatcher.cpp) and [Dispatcher.h](./model/Dispatcher.h) - this is a class for the model's dispatcher.
-   2. 
+   2. [LoadBalancing.cpp](./model/LoadBalancing.cpp) and [LoadBalancing.h](./model/LoadBalancing.h) - all the load-balancing algorithms can be implemented here. A Dispatcher is initialized with one of these.
+   3. [Makefile](./model/Makefile) - this will compile the code into a temporary test program.
+   4. [Node.cpp](./model/Node.cpp) and [Node.h](./model/Node.h) - this represents a service node in the model.
+   5. [temp.cpp](./model/temp.cpp) - a temporary code file to test imports and compilation.
+
 
 ### Data
 
@@ -39,3 +44,5 @@ Additionally, data from Northeastern University's Discovery cluster was provided
 ### Model
 
 These are the C++ files for the simulation to run. Currently (2020-03-12) these files are mostly just a skeleton for a basic implementation.
+
+### Scripts
