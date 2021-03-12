@@ -6,9 +6,9 @@ Created by Hannah Khafif, Tyler Royere, Fizzah Shaikh, & Nicolas Tedori
 
 ## Contents
 
-1. [Background](https://github.com/niclad/lba-simulation#background)
-2. [Files](https://github.com/niclad/lba-simulation#files)
-3. [Data](https://github.com/niclad/lba-simulation#data)
+1. [Background](#background)
+2. [Files](#files)
+3. [Data](#data)
 
 ### Background
 
@@ -18,8 +18,8 @@ This project aims to evaluate multiple load-balancing algorithms on the effect o
 
 The files in this repo are outlined below
 
-1. [data]()
-   1. [anon_jobs_2020-08.json.bz2](anon_jobs_2020-08.json.bz2) - this is one month of data from the Eagle super computer. (See [here](#data).)
+1. [data](./data)
+   1. [anon_jobs_2020-08.json.bz2](./data/anon_jobs_2020-08.json.bz2) - this is one month of data from the Eagle super computer. (See [here](#data).)
 
 ### Data
 
