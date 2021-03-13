@@ -17,6 +17,36 @@ namespace lba {
 int roundrobin(std::vector<ServiceNode> nodeList);
 
 /**
+ * @brief Random load-balancing algorithm
+ *
+ * NOTE: might need to add a job argument
+ * @param nodeList the list of available Service Nodes to choose from
+ * @return int the chosen service node
+ */
+int random(std::vector<ServiceNode> NodeList);
+
+/**
+ * @brief Utilization based load-balancing algorithm
+ *
+ * NOTE: might need a job argument
+ *
+ * @param nodeList the list of available service nodes to choose from
+ * @return int the chosen service node
+ */
+int utilizationbased(std::vector<ServiceNode> nodeList);
+
+/**
+ * @brief Least Connections load-balancing algorithms
+ *
+ * NOTE: might need to add a job argument
+ * NOTE: maybe change this name?
+ *
+ * @param nodeList the list of available service nodes to choose from
+ * @return int the chosen service node
+ */
+int leastconnections(std::vector<ServiceNode> nodeList);
+
+/**
  * @brief Function to test the currenct implementation of the system
  * 
  * @param nodeList 

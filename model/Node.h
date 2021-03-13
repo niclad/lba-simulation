@@ -74,6 +74,15 @@ class ServiceNode {
    */
   double getUtil() const;
 
+  /**
+   * @brief Get the Service Node server's job queue length
+   *
+   * NOTE: This will have to be updated based on how jobs are processed
+   * 
+   * @return int the number of jobs in the service node's queue
+   */
+  int getQueueLength() const;
+
  private:
   // A service nodes indentifying number
   int id;
