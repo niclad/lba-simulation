@@ -6,6 +6,8 @@
 #include "LoadBalancing.h"
 #include "Node.h"
 
+#include "rvgs.h"
+
 // tests a load balancing algorithm with 'nodes', 'num_iter' times
 void test_lba(std::function<int(std::vector<ServiceNode>)> lba, 
         std::vector<ServiceNode> nodes, int num_iters = 25) {
@@ -13,6 +15,11 @@ void test_lba(std::function<int(std::vector<ServiceNode>)> lba,
         std::cout << "Job index: " << ii << " | "
             << "Chosen node: " << lba(nodes) << std::endl;
     }
+}
+
+double getArrival() {
+  static double arrival {0};
+  arrival += Normal(43200, 10800); // mean of noon s (stdev?) of 1/8 a day
 }
 
 int main() {

@@ -3,12 +3,11 @@
 
 class Job {
   public:
-    Job(); 
-    Job(double prevDeparture); 
+    Job(double arrival); 
+    Job(double arrival, double prevDeparture); 
     double setDelay(double prevDeparture);
     double calcDeparture();
   private:
-    double getArrival();
     double getService();
     double calcWait();
     double arrival;

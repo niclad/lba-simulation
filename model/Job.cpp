@@ -2,20 +2,13 @@
 
 #include "rvgs.h"
 
-Job::Job() : arrival{getArrival()}, service{getService()} {
+Job::Job(double arrival) : arrival{arrival}, service{getService()} {
   // service needs to be generated via GetService
 }
 
-Job::Job(double prevDeparture)
-    : arrival{getArrival()}, service{getService()}, delay{setDelay(prevDeparture)} {
+Job::Job(double arrival, double prevDeparture)
+    : arrival{arrival}, service{getService()}, delay{setDelay(prevDeparture)} {
   // service needs to be generated via GetService
-}
-
-double Job::getArrival() {
-  // get an exponential random variate in seconds
-  return Normal(43200, 21600); 
-  // FIXME: will also need to add a day value if the sim will run across 
-  // multiple days
 }
 
 double Job::getService() {
