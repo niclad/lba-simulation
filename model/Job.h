@@ -3,8 +3,9 @@
 
 class Job {
   public:
-    Job(double arrival);
-    void setDelay(double prevDeparture);
+    Job(double arrival); 
+    Job(double arrival, double prevDeparture); 
+    double setDelay(double prevDeparture);
     double calcDeparture();
   private:
     double calcWait();
