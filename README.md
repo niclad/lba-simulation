@@ -45,7 +45,7 @@ The files in this repo are outlined below
    3. [test_data.json](./data/test_data.json) - primarily used to test the [JSON data parser utility](./util/json-data-parser.py).
 2. [model](./model) (See [here](#model).)
    1. [Job.cpp](./model/Job.cpp) and [Job.h](./model/Job.h) - this is a class for the model's representation of a Job.
-   2. [LoadBalancing.cpp](./model/LoadBalancing.cpp) and [LoadBalancing.h](./model/LoadBalancing.h) - all the load-balancing algorithms can be implemented here. A Dispatcher is initialized with one of these.
+   2. [LoadBalancing.cpp](./model/LoadBalancing.cpp) and [LoadBalancing.h](./model/LoadBalancing.h) - all the load-balancing algorithms can be implemented here.
    3. [Makefile](./model/Makefile) - this will compile the code into a temporary test program.
    4. [Node.cpp](./model/Node.cpp) and [Node.h](./model/Node.h) - this represents a service node in the model.
    5. [temp.cpp](./model/temp.cpp) - a temporary code file to test imports and compilation.
