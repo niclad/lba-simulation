@@ -23,6 +23,8 @@ int ServiceNode::getId() const { return id; }
 
 double ServiceNode::getUtil() const { return util; }
 
+int ServiceNode::getQueueLength() const { return jobQueue.size(); }
+
 std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
   out << "ID: " << node.getId() << ", util: " << node.getUtil();
 
