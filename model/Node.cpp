@@ -10,9 +10,9 @@ void ServiceNode::updateUtil(int nJobs, double departure,
   util = ((double)nJobs / departure) * avgServiceTime;
 }
 
-bool ServiceNode::enterQueue(int job) {
+bool ServiceNode::enterQueue(Job job) {
   if (jobQueue.size() < maxQueueSz) {
-    jobQueue.push(static_cast<double>(job));
+    jobQueue.push(job);
     return true;
   }
 
