@@ -14,7 +14,7 @@ temp.o: temp.cpp Job.h Node.h LoadBalancing.h
 LoadBalancing.o: LoadBalancing.cpp LoadBalancing.h
 	$(CXX) $(CXFLAGS) -c $*.cpp
 
-Node.o: Node.cpp Node.h
+Node.o: Node.cpp Node.h Job.h
 	$(CXX) $(CXFLAGS) -c $*.cpp
 
 Job.o: Job.cpp Job.h
