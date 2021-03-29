@@ -20,6 +20,10 @@ double Job::setDelay(double prevDeparture) {
   return delay;
 }
 
+double Job::getServiceTime() const {
+  return service;
+}
+
 double Job::getService() {
   // get an exponential random variate in seconds
   return Exponential(

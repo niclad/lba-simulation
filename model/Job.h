@@ -46,6 +46,13 @@ class Job {
    */
   double calcDeparture();
 
+  /**
+   * @brief Get the Job's service time.
+   * 
+   * @return double The service time of this Job.
+   */
+  double getServiceTime() const;
+
  private:
   /**
    * @brief Get the Service object
