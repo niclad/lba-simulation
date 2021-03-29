@@ -43,14 +43,10 @@ class ServiceNode {
    * defined in slide deck 1.2, slide 22.
    *
    * Equation: \Bar{x} = (n/c_n)*\Bar{s}
-   *
-   * NOTE: As of right now, a "job" is still not concretely defined.
-   *
-   * @param nJobs The number of jobs up until the time this is called.
-   * @param departure The last departure time since this was called.
-   * @param avgServiceTime The average service time up to this point.
+   * 
+   * @param lastDeparture The last departure time since this was called.
    */
-  void updateUtil(int nJobs, double departure, double avgServiceTime);
+  void updateUtil(double lastDeparture);
 
   /**
    * @brief Add the job to the Service Node's queue, if there's space
@@ -85,6 +81,17 @@ class ServiceNode {
   int getQueueLength() const;
 
  private:
+  /**
+   * @brief Calculate the average service time
+   * 
+   * Calculate the average service time, each time there's a new job added
+   * 
+   * @param lastST The service time of the most recently pushed Job.
+   * 
+   * @return double 
+   */
+  double updateAvgST(double lastST);
+
   // A service nodes indentifying number
   int id;
 
@@ -100,6 +107,12 @@ class ServiceNode {
   // The maximum number of jobs that can wait in the queue.
   // q.size() <= maxQueueSz
   size_t maxQueueSz;
+
+  // The running average of the service time
+  double avgST; 
+
+  // The total number of jobs processed over the life time of this ServiceNode
+  int numJobsProcessed;
 };
 
 // overload the << operator
