@@ -7,8 +7,10 @@
 #include "Node.h"
 #include "rvgs.h"
 
-const int DAY_SEC{24 * 60 * 60};   // seconds in a day
-const int NOON_TIME{DAY_SEC / 2};  // time of day for noon
+const int DAY_SEC{24 * 60 * 60};         // seconds in a day
+const int NOON_TIME{DAY_SEC / 2};        // time of day for noon
+const double START{0.0};                 // start time for the simulation
+const double END{(double)DAY_SEC * 30};  // end time for the simulation
 
 void test_lba(std::function<int(std::vector<ServiceNode>)> lba,
               std::vector<ServiceNode> nodes, int num_iters = 25);
@@ -33,10 +35,20 @@ int main() {
 }
 
 // tests a load balancing algorithm with 'nodes', 'num_iter' times
-void test_lba(std::function<int(std::vector<ServiceNode>)> lba, 
-        std::vector<ServiceNode> nodes, int num_iters = 25) {
-    for (int ii = 0; ii < num_iters; ii++) {
-        std::cout << "Job index: " << ii << " | "
-            << "Chosen node: " << lba(nodes) << std::endl;
-    }
+void test_lba(std::function<int(std::vector<ServiceNode>)> lba,
+              std::vector<ServiceNode> nodes, int num_iters = 25) {
+  for (int ii = 0; ii < num_iters; ii++) {
+    std::cout << "Job index: " << ii << " | "
+              << "Chosen node: " << lba(nodes) << std::endl;
+  }
+}
+
+// get a service time for a job
+// NOTE: This makes no sense
+double getArrival() {
+  static double prevArr{START};  // the previous arrival time
+  double st {Uniform(prevArr, DAY_SEC)}; // choose an arrival time
+  prevArr += st; // update the the 
+
+  return st;
 }
