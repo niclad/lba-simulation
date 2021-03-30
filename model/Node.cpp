@@ -1,4 +1,5 @@
 #include "Node.h"
+#include "Job.h"
 
 ServiceNode::ServiceNode(int id)
     : id{id}, util{0}, maxQueueSz{0}, avgST{0}, numJobsProcessed{0} {}
@@ -10,6 +11,8 @@ void ServiceNode::updateUtil(double lastDeparture) {
   util = ((double)numJobsProcessed / lastDeparture) * avgST;
 }
 
+// FIXME: abstract to entering the node, then determine if there's queue space 
+// if the server is IN USE
 bool ServiceNode::enterQueue(Job job) {
   if (jobQueue.size() < maxQueueSz) {
     ++numJobsProcessed; // this Job can be processed
@@ -20,7 +23,7 @@ bool ServiceNode::enterQueue(Job job) {
     updateAvgST(job.getServiceTime());
 
     // update the running average of the utilization
-    updateUtil();
+    updateUtil(job.calcDeparture());
 
     return true;
   }
@@ -35,8 +38,10 @@ double ServiceNode::getUtil() const { return util; }
 int ServiceNode::getQueueLength() const { return jobQueue.size(); }
 
 double ServiceNode::updateAvgST(double lastST) {
-  int currQSz{jobQueue.size()};
+  size_t currQSz{jobQueue.size()};
   avgST = avgST + ((1 / currQSz) * (lastST - avgST));
+
+  return avgST;
 }
 
 std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
