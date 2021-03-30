@@ -58,6 +58,18 @@ class ServiceNode {
   bool enterQueue(Job job);
 
   /**
+   * @brief Determine if a job can enter this ServiceNode.
+   * 
+   * Given a job, determine if this job can actually enter the ServiceNode. If
+   * the node is busy, then check if there's space to wait in the queue.
+   * 
+   * @param job The Job attempting to enter the ServiceNode
+   * @return true If a job is able to be worked on here.
+   * @return false If this node is full/busy
+   */
+  bool enterNode(Job job);
+
+  /**
    * @brief Get the Service Node's ID
    *
    * @return int The Service Node's ID
@@ -79,6 +91,15 @@ class ServiceNode {
    * @return int the number of jobs in the service node's queue
    */
   int getQueueLength() const;
+
+  /**
+   * @brief Process the Jobs in the ServiceNode.
+   * 
+   * This will process the Jobs in the ServiceNode, effectively updating the
+   * lastDeparture and jobQueue, as well as other relevant statistics.
+   * 
+   */
+  void processQueue();
 
  private:
   /**
@@ -113,6 +134,10 @@ class ServiceNode {
 
   // The total number of jobs processed over the life time of this ServiceNode
   int numJobsProcessed;
+
+  // The departure time of the last job to enter the server part of this
+  // ServiceNode;
+  double lastDeparture;
 };
 
 // overload the << operator
