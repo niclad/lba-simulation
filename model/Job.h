@@ -53,6 +53,13 @@ class Job {
    */
   double getServiceTime() const;
 
+  /**
+   * @brief Get the Job's arrival time
+   * 
+   * @return double The Job's arrival time
+   */
+  double getArrival() const;
+
  private:
   /**
    * @brief Get the Service object

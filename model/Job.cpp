@@ -24,6 +24,10 @@ double Job::getServiceTime() const {
   return service;
 }
 
+double Job::getArrival() const {
+  return arrival;
+}
+
 double Job::getService() {
   // get an exponential random variate in seconds
   return Exponential(
