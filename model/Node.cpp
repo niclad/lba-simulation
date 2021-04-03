@@ -67,6 +67,10 @@ void ServiceNode::processQueue() {
     // cant pop an element and put it back. Also won't run in real-time.
     // This means, that the queue might not be empty when a job is trying to be
     // added to the ServiceNode.
+
+    // check the most recent arrival time. if it's less than the running job's 
+    // departure time, then update and process the server until a departure > arrival
+    // is found.
     double beginTime{};
     // process queue
   }
