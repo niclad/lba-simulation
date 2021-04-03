@@ -31,7 +31,7 @@ double Job::getArrival() const {
 double Job::getService() {
   // get an exponential random variate in seconds
   return Exponential(
-      4049);  // 4049 sec. is mean random service time on discovery
+      4049);  // 4049 sec. is mean random service time on discovery -- switch to seconds?
 }
 
 double Job::calcWait() { return delay + service; }
