@@ -55,7 +55,7 @@ double getArrival() {
   double st {Uniform(prevArr, DAY_SEC)}; // choose an arrival time
   prevArr += st; // update the the 
 
-  return st;
+  return prevArr;
 }
 
 /**
