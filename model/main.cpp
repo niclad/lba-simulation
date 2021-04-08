@@ -22,17 +22,19 @@ void test_lba(std::function<int(std::vector<ServiceNode>)> lba,
 }
 
 double getArrival();
-std::vector<ServiceNode> buildSQMS(int nNodes);
+std::vector<ServiceNode> buildNodeList(int nNodes, int qSz);
+int dispatcher(std::vector<ServiceNode> nodes,
+               std::function<int(std::vector<ServiceNode>)> lba);
+/* TO-DO:
+ * Implement the function declartions below this list....
+ */
+void sqmsSimulation();
+void mqmsSimulation();
 
 int main() {
   std::vector<ServiceNode> nodes = {};
   for (int ii = 0; ii < 10; ii++) {
     nodes.push_back(ServiceNode(ii));
-  }
-  // build sqms
-  std::vector<ServiceNode> sqms(buildSQMS(10));
-  for (auto i = sqms.begin(); i != sqms.end(); i++) {
-    std::cout << *i << std::endl;
   }
 
   // generic LBA and ServiceNode test
@@ -47,32 +49,48 @@ int main() {
   test_lba(lba::random, nodes, 50);
 }
 
-
 // get a service time for a job
 // NOTE: This makes no sense
 double getArrival() {
-  static double prevArr{START};  // the previous arrival time
-  double st {Uniform(prevArr, DAY_SEC)}; // choose an arrival time
-  prevArr += st; // update the the 
+  static double prevArr{START};          // the previous arrival time
+  double st{Uniform(prevArr, DAY_SEC)};  // choose an arrival time
+  prevArr += st;                         // update the the
 
   return prevArr;
 }
 
 /**
- * @brief Build a single-queue, multi-server model
+ * @brief Build a list of service nodes
  * 
- * Add the nodes to the list of ServiceNodes for a model with no queues and all
- * servers.
- * 
- * @param nNodes Number of ServiceNodes in the simulation.
- * @return std::vector<ServiceNode> The ServiceNodes in the model
+ * @param nNodes The number of nodes to include in the model
+ * @param qSz The queue size of the nodes
+ * @return std::vector<ServiceNode> 
  */
-std::vector<ServiceNode> buildSQMS(int nNodes) {
-  std::vector<ServiceNode> sqms;
+std::vector<ServiceNode> buildNodeList(int nNodes, int qSz) {
+  std::vector<ServiceNode> tempList;
 
   for (int id = 0; id < nNodes; id++) {
-    sqms.push_back(ServiceNode(id));
+    tempList.push_back(ServiceNode(id, qSz));
   }
 
-  return sqms;
+  return tempList;
+}
+
+/**
+ * @brief Pick a service node for the next job to go to
+ *
+ * dispatcher will choose a node's index to send a job to. However, this will
+ * not ignore nodes with a full queue. (I.e., if a job is sent to a full node,
+ * that job won't be able to run unless the dispatcher picks a node with space.)
+ *
+ * @param nodes A list of usable service nodes (that may have full queues)
+ * @param lba The load-balancing algorithm to use to choose a node
+ * @return int The index of the node to send a job to
+ */
+int dispatcher(std::vector<ServiceNode> nodes,
+               std::function<int(std::vector<ServiceNode>)> lba) {
+  int nodeIdx{-1};       // -1 as no node will have this index
+  nodeIdx = lba(nodes);  // pick a node using the LBA
+
+  return nodeIdx;
 }
