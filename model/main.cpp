@@ -7,10 +7,15 @@
 #include "Node.h"
 #include "rvgs.h"
 
+// Global variables
 const int DAY_SEC{24 * 60 * 60};         // seconds in a day
 const int NOON_TIME{DAY_SEC / 2};        // time of day for noon
 const double START{0.0};                 // start time for the simulation
 const double END{(double)DAY_SEC * 30};  // end time for the simulation
+
+// Type definition aliases
+typedef int node_idx;
+typedef std::function<node_idx(std::vector<ServiceNode>)> lba_alg;
 
 // tests a load balancing algorithm with 'nodes', 'num_iter' times
 void test_lba(std::function<int(std::vector<ServiceNode>)> lba,
@@ -23,13 +28,13 @@ void test_lba(std::function<int(std::vector<ServiceNode>)> lba,
 
 double getArrival();
 std::vector<ServiceNode> buildNodeList(int nNodes, int qSz);
-int dispatcher(std::vector<ServiceNode> nodes,
-               std::function<int(std::vector<ServiceNode>)> lba);
+node_idx dispatcher(std::vector<ServiceNode> nodes, lba_alg lba);
+
 /* TO-DO:
  * Implement the function declartions below this list....
  */
-void sqmsSimulation();
-void mqmsSimulation();
+void sqmsSimulation(int nNodes, lba_alg lba, int nJobs);
+void mqmsSimulation(int nNodes, lba_alg lba, int qSz, int nJobs);
 
 int main() {
   std::vector<ServiceNode> nodes = {};
@@ -61,10 +66,10 @@ double getArrival() {
 
 /**
  * @brief Build a list of service nodes
- * 
+ *
  * @param nNodes The number of nodes to include in the model
  * @param qSz The queue size of the nodes
- * @return std::vector<ServiceNode> 
+ * @return std::vector<ServiceNode>
  */
 std::vector<ServiceNode> buildNodeList(int nNodes, int qSz) {
   std::vector<ServiceNode> tempList;
@@ -93,4 +98,23 @@ int dispatcher(std::vector<ServiceNode> nodes,
   nodeIdx = lba(nodes);  // pick a node using the LBA
 
   return nodeIdx;
+}
+
+/**
+ * @brief Run a single-queue, multi-server simulation
+ * 
+ * The simulation will generate it's own list of nodes and use the LBA to send
+ * nJobs to the nodes in the model.
+ * 
+ * @param nNodes The number of nodes to use in the simulation
+ * @param lba The node balancing 
+ * @param nJobs The number of jobs to "process" in the simulation
+ */
+void sqmsSimulation(int nNodes, lba_alg lba, int nJobs) {
+  /* TO-DO:
+   * Actually implement code.
+   * Generate nodes list
+   * Run simulation to n jobs
+   */
+
 }
