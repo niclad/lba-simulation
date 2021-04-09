@@ -18,8 +18,8 @@ ServiceNode::ServiceNode(int id, size_t maxQueueSz)
       numJobsProcessed{0},
       lastDeparture{0.0} {}
 
-void ServiceNode::updateUtil(double lastDeparture) {
-  util = ((double)numJobsProcessed / lastDeparture) * avgST;
+void ServiceNode::updateUtil(double mostRecentDep) {
+  util = ((double)numJobsProcessed / mostRecentDep) * avgST;
 }
 
 bool ServiceNode::enterQueue(Job job) {
@@ -27,7 +27,7 @@ bool ServiceNode::enterQueue(Job job) {
     ++numJobsProcessed;  // this Job can be processed
 
     if (!jobQueue.empty()) {
-        job.setDelay(jobQueue.back().calcDeparture());
+      job.setDelay(jobQueue.back().calcDeparture());
     }
 
     jobQueue.push(job);
@@ -40,10 +40,10 @@ bool ServiceNode::enterQueue(Job job) {
     updateUtil(job.calcDeparture());
 
     // process the existing queue now that a new arrival has come
-    // problem, how to handle case where queue is full 
+    // problem, how to handle case where queue is full
     // - can't add new job to queue so the processQueue() function won't
     //   be able to see the "current" time
-    //processQueue();
+    // processQueue();
 
     return true;
   }
@@ -52,9 +52,17 @@ bool ServiceNode::enterQueue(Job job) {
 }
 
 bool ServiceNode::enterNode(Job job) {
-  if (job.getArrival() < lastDeparture) {
-    bool isInQueue{enterQueue(job)};
+  if (maxQueueSz > 0) {
+    processQueue();
+  }
 
+  if (job.getArrival() < lastDeparture) {
+    // the server is busy and there's no queue, so job can't wait here
+    if (maxQueueSz == 0) {
+      return false;      
+    }
+
+    bool isInQueue{enterQueue(job)};
     return isInQueue;
   }
 
@@ -72,15 +80,15 @@ void ServiceNode::processQueue() {
     // 2. calculate the service begin time
     //    A. if begin time <= lastDeparture
     //       I. update the lastDeparture
-    //      II. 
+    //      II.
     // PROBLEM: need to figure out how the simulation will run
     // cant pop an element and put it back. Also won't run in real-time.
     // This means, that the queue might not be empty when a job is trying to be
     // added to the ServiceNode.
 
-    // check the most recent arrival time. if it's less than the running job's 
-    // departure time, then update and process the server until a departure > arrival
-    // is found.
+    // check the most recent arrival time. if it's less than the running job's
+    // departure time, then update and process the server until a departure >
+    // arrival is found.
     double beginTime{};
     // process queue
 
@@ -91,23 +99,21 @@ void ServiceNode::processQueue() {
       while (!jobQueue.empty()) {
         // if front of queue has already departed
         if (jobQueue.front().calcDeparture() < currentTime) {
-            // insert calculations here maybe?
+          // insert calculations here maybe?
 
-            // remove job from queue
-            jobQueue.pop();
-        }
-        else {
-            break;
+          // remove job from queue
+          jobQueue.pop();
+        } else {
+          break;
         }
       }
-      
+
       // update job in servers departure time
       if (!jobQueue.empty()) {
         // first job in what's left is being processed in server
         lastDeparture = jobQueue.front().calcDeparture();
         jobQueue.pop();
-      }
-      else {
+      } else {
         // completed all jobs
         lastDeparture = 0;
       }
