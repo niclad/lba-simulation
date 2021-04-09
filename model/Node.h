@@ -102,6 +102,16 @@ class ServiceNode {
    */
   void processQueue(double currArrival);
 
+  /**
+   * @brief Calculate the average service time.
+   * 
+   * Calculate the average service time for this node at the "point in time" for
+   * when this function is called.
+   * 
+   * @return double 
+   */
+  double calcAvgSt();
+
  private:
   /**
    * @brief Calculate the average service time

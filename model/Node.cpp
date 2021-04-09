@@ -131,6 +131,10 @@ double ServiceNode::getUtil() const { return util; }
 
 int ServiceNode::getQueueLength() const { return jobQueue.size(); }
 
+double ServiceNode::calcAvgSt() {
+  return numJobsProcessed / totST;
+}
+
 double ServiceNode::updateTotST(double lastST) {
   totST = totST + lastST;
   return totST;
