@@ -8,8 +8,8 @@
 #include "rvgs.h"
 
 // Global variables
-const int DAY_SEC{24 * 60 * 60};         // seconds in a day
-const int NOON_TIME{DAY_SEC / 2};        // time of day for noon
+const int DAY_SEC{24 * 60 * 60};   // seconds in a day
+const int NOON_TIME{DAY_SEC / 2};  // time of day for noon
 const int HOUR_SEC{DAY_SEC / 24};
 const double START{0.0};                 // start time for the simulation
 const double END{(double)DAY_SEC * 30};  // end time for the simulation
@@ -17,6 +17,7 @@ const double END{(double)DAY_SEC * 30};  // end time for the simulation
 // Type definition aliases
 typedef int node_idx;
 typedef std::function<node_idx(std::vector<ServiceNode>)> lba_alg;
+typedef std::vector<ServiceNode> node_list;
 
 // tests a load balancing algorithm with 'nodes', 'num_iter' times
 void test_lba(std::function<int(std::vector<ServiceNode>)> lba,
@@ -28,8 +29,8 @@ void test_lba(std::function<int(std::vector<ServiceNode>)> lba,
 }
 
 double getArrival();
-std::vector<ServiceNode> buildNodeList(int nNodes, int qSz);
-node_idx dispatcher(std::vector<ServiceNode> nodes, lba_alg lba);
+node_list buildNodeList(int nNodes, int qSz);
+node_idx dispatcher(node_list nodes, lba_alg lba);
 
 /* TO-DO:
  * Implement the function declartions below this list....
@@ -55,16 +56,16 @@ int main() {
   test_lba(lba::random, nodes, 50);
 
   // testing sqms simulation
-  sqmsSimulation(3 /*nodes*/, lba::roundrobin, 50000/*jobs*/);
+  sqmsSimulation(3 /*nodes*/, lba::roundrobin, 50000 /*jobs*/);
 }
 
 // get a service time for a job
 // NOTE: This makes no sense
 //     EDIT: I think it makes sense now
 double getArrival() {
-  static double prevArr{START};          // the previous arrival time
+  static double prevArr{START};      // the previous arrival time
   double st{Uniform(0, NOON_TIME)};  // choose an arrival time
-  prevArr += st;                         // update the the
+  prevArr += st;                     // update the the
 
   return prevArr;
 }
@@ -76,8 +77,8 @@ double getArrival() {
  * @param qSz The queue size of the nodes
  * @return std::vector<ServiceNode>
  */
-std::vector<ServiceNode> buildNodeList(int nNodes, int qSz) {
-  std::vector<ServiceNode> tempList;
+node_list buildNodeList(int nNodes, int qSz) {
+  node_list tempList;
 
   for (int id = 0; id < nNodes; id++) {
     tempList.push_back(ServiceNode(id, qSz));
@@ -97,8 +98,7 @@ std::vector<ServiceNode> buildNodeList(int nNodes, int qSz) {
  * @param lba The load-balancing algorithm to use to choose a node
  * @return int The index of the node to send a job to
  */
-int dispatcher(std::vector<ServiceNode> nodes,
-        std::function<int(std::vector<ServiceNode>)> lba) {
+int dispatcher(node_list nodes, lba_alg lba) {
   int nodeIdx{-1};       // -1 as no node will have this index
   nodeIdx = lba(nodes);  // pick a node using the LBA
 
@@ -107,12 +107,12 @@ int dispatcher(std::vector<ServiceNode> nodes,
 
 /**
  * @brief Run a single-queue, multi-server simulation
- * 
+ *
  * The simulation will generate it's own list of nodes and use the LBA to send
  * nJobs to the nodes in the model.
- * 
+ *
  * @param nNodes The number of nodes to use in the simulation
- * @param lba The node balancing 
+ * @param lba The node balancing
  * @param nJobs The number of jobs to "process" in the simulation
  */
 void sqmsSimulation(int nNodes, lba_alg lba, int nJobs) {
@@ -123,7 +123,7 @@ void sqmsSimulation(int nNodes, lba_alg lba, int nJobs) {
    */
 
   // build node list
-  std::vector<ServiceNode> nodes{buildNodeList(nNodes, 5/*arbitrary value*/)};
+  node_list nodes{buildNodeList(nNodes, 5 /*arbitrary value*/)};
 
   // run for the number of jobs
   for (int ii = 0; ii < nJobs; ii++) {
@@ -138,8 +138,7 @@ void sqmsSimulation(int nNodes, lba_alg lba, int nJobs) {
     if (nodes[receiver].enterNode(job)) {
       // node added successfully
       std::cout << "Job successfully added" << std::endl;
-    }
-    else {
+    } else {
       // node unable to be added, this is where different rejection
       // techiniques could be used
       std::cout << "Job unsuccessfully added" << std::endl;

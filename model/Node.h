@@ -44,9 +44,9 @@ class ServiceNode {
    *
    * Equation: \Bar{x} = (n/c_n)*\Bar{s}
    * 
-   * @param lastDeparture The last departure time since this was called.
+   * @param mostRecentDep The most recent entering job's departure time
    */
-  void updateUtil(double lastDeparture);
+  void updateUtil(double mostRecentDep);
 
   /**
    * @brief Add the job to the Service Node's queue, if there's space
@@ -98,8 +98,19 @@ class ServiceNode {
    * This will process the Jobs in the ServiceNode, effectively updating the
    * lastDeparture and jobQueue, as well as other relevant statistics.
    * 
+   * @param currArrival The job's arrival time trying to enter the queue
    */
-  void processQueue();
+  void processQueue(double currArrival);
+
+  /**
+   * @brief Calculate the average service time.
+   * 
+   * Calculate the average service time for this node at the "point in time" for
+   * when this function is called.
+   * 
+   * @return double 
+   */
+  double calcAvgSt();
 
  private:
   /**
@@ -111,7 +122,7 @@ class ServiceNode {
    * 
    * @return double 
    */
-  double updateAvgST(double lastST);
+  double updateTotST(double lastST);
 
   // A service nodes indentifying number
   int id;
@@ -130,7 +141,7 @@ class ServiceNode {
   size_t maxQueueSz;
 
   // The running average of the service time
-  double avgST; 
+  double totST; 
 
   // The total number of jobs processed over the life time of this ServiceNode
   int numJobsProcessed;
