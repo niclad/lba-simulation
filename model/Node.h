@@ -44,9 +44,9 @@ class ServiceNode {
    *
    * Equation: \Bar{x} = (n/c_n)*\Bar{s}
    * 
-   * @param lastDeparture The last departure time since this was called.
+   * @param mostRecentDep The most recent entering job's departure time
    */
-  void updateUtil(double lastDeparture);
+  void updateUtil(double mostRecentDep);
 
   /**
    * @brief Add the job to the Service Node's queue, if there's space
