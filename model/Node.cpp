@@ -32,18 +32,11 @@ bool ServiceNode::enterQueue(Job job) {
 
     jobQueue.push(job);
 
-    // MOVE THESE TO PROCESSJOBS
-    // update the running average service time
-    updateAvgST(job.getServiceTime());
-
-    // update the running average of the utilization
-    updateUtil(job.calcDeparture());
-
     // process the existing queue now that a new arrival has come
     // problem, how to handle case where queue is full
     // - can't add new job to queue so the processQueue() function won't
     //   be able to see the "current" time
-    // processQueue();
+    // processQueue(job.getArrival());
 
     return true;
   }
@@ -52,14 +45,22 @@ bool ServiceNode::enterQueue(Job job) {
 }
 
 bool ServiceNode::enterNode(Job job) {
+  // MOVE THESE TO PROCESSJOBS
+  // update the running average service time
+  updateAvgST(job.getServiceTime());
+
+  // update the running average of the utilization
+  updateUtil(job.calcDeparture());
+
+  double currArrival{job.getArrival()};
   if (maxQueueSz > 0) {
-    processQueue();
+    processQueue(currArrival);
   }
 
   if (job.getArrival() < lastDeparture) {
     // the server is busy and there's no queue, so job can't wait here
     if (maxQueueSz == 0) {
-      return false;      
+      return false;
     }
 
     bool isInQueue{enterQueue(job)};
@@ -74,7 +75,7 @@ bool ServiceNode::enterNode(Job job) {
   return (jobQueue.size() == 0);
 }
 
-void ServiceNode::processQueue() {
+void ServiceNode::processQueue(double currArrival) {
   if (jobQueue.size() > 0) {
     // 1. pop first element
     // 2. calculate the service begin time
@@ -89,16 +90,16 @@ void ServiceNode::processQueue() {
     // check the most recent arrival time. if it's less than the running job's
     // departure time, then update and process the server until a departure >
     // arrival is found.
-    double beginTime{};
+
     // process queue
 
     // get the most recent arrival time (back of queue)
-    double currentTime{jobQueue.back().getArrival()};
+    // double currentTime{jobQueue.back().getArrival()};
     // if the job in the server is still being processed
-    if (currentTime > lastDeparture) {
+    if (currArrival > lastDeparture) {
       while (!jobQueue.empty()) {
         // if front of queue has already departed
-        if (jobQueue.front().calcDeparture() < currentTime) {
+        if (jobQueue.front().calcDeparture() < currArrival) {
           // insert calculations here maybe?
 
           // remove job from queue

@@ -98,8 +98,9 @@ class ServiceNode {
    * This will process the Jobs in the ServiceNode, effectively updating the
    * lastDeparture and jobQueue, as well as other relevant statistics.
    * 
+   * @param currArrival The job's arrival time trying to enter the queue
    */
-  void processQueue();
+  void processQueue(double currArrival);
 
  private:
   /**
