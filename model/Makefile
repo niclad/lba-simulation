@@ -1,7 +1,7 @@
 CXX = g++
 CC = gcc
-CXFLAGS = -Wall -std=c++14
-CCFLAGS = -Wall -std=c99
+CXFLAGS = -Wall -std=c++14 -g
+CCFLAGS = -Wall -std=c99 -g
 
 default: main.out
 
