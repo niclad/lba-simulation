@@ -112,7 +112,7 @@ class ServiceNode {
    * 
    * @return double 
    */
-  double updateAvgST(double lastST);
+  double updateTotST(double lastST);
 
   // A service nodes indentifying number
   int id;
@@ -131,7 +131,7 @@ class ServiceNode {
   size_t maxQueueSz;
 
   // The running average of the service time
-  double avgST; 
+  double totST; 
 
   // The total number of jobs processed over the life time of this ServiceNode
   int numJobsProcessed;
