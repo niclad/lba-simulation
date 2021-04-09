@@ -61,6 +61,8 @@ bool ServiceNode::enterNode(Job job) {
   }
 
   // empty queue, job can queue (for both cases)
+  // bitwise OR to ensure that both cases are covered
+  // (w/ and w/o queueueus)
   isEnter |= (jobQueue.size() == 0);
 
   if (isEnter) {
