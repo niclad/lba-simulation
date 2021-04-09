@@ -34,7 +34,6 @@ bool ServiceNode::enterQueue(Job job) {
     // problem, how to handle case where queue is full
     // - can't add new job to queue so the processQueue() function won't
     //   be able to see the "current" time
-    // processQueue(job.getArrival());
 
     return true;
   }
