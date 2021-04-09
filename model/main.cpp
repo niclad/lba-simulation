@@ -17,6 +17,7 @@ const double END{(double)DAY_SEC * 30};  // end time for the simulation
 // Type definition aliases
 typedef int node_idx;
 typedef std::function<node_idx(std::vector<ServiceNode>)> lba_alg;
+typedef std::vector<ServiceNode> node_list;
 
 // tests a load balancing algorithm with 'nodes', 'num_iter' times
 void test_lba(std::function<int(std::vector<ServiceNode>)> lba,
@@ -28,8 +29,8 @@ void test_lba(std::function<int(std::vector<ServiceNode>)> lba,
 }
 
 double getArrival();
-std::vector<ServiceNode> buildNodeList(int nNodes, int qSz);
-node_idx dispatcher(std::vector<ServiceNode> nodes, lba_alg lba);
+node_list buildNodeList(int nNodes, int qSz);
+node_idx dispatcher(node_list nodes, lba_alg lba);
 
 /* TO-DO:
  * Implement the function declartions below this list....
@@ -76,8 +77,8 @@ double getArrival() {
  * @param qSz The queue size of the nodes
  * @return std::vector<ServiceNode>
  */
-std::vector<ServiceNode> buildNodeList(int nNodes, int qSz) {
-  std::vector<ServiceNode> tempList;
+node_list buildNodeList(int nNodes, int qSz) {
+  node_list tempList;
 
   for (int id = 0; id < nNodes; id++) {
     tempList.push_back(ServiceNode(id, qSz));
@@ -97,7 +98,7 @@ std::vector<ServiceNode> buildNodeList(int nNodes, int qSz) {
  * @param lba The load-balancing algorithm to use to choose a node
  * @return int The index of the node to send a job to
  */
-int dispatcher(std::vector<ServiceNode> nodes, lba_alg lba) {
+int dispatcher(node_list nodes, lba_alg lba) {
   int nodeIdx{-1};       // -1 as no node will have this index
   nodeIdx = lba(nodes);  // pick a node using the LBA
 
@@ -122,7 +123,7 @@ void sqmsSimulation(int nNodes, lba_alg lba, int nJobs) {
    */
 
   // build node list
-  std::vector<ServiceNode> nodes{buildNodeList(nNodes, 5 /*arbitrary value*/)};
+  node_list nodes{buildNodeList(nNodes, 5 /*arbitrary value*/)};
 
   // run for the number of jobs
   for (int ii = 0; ii < nJobs; ii++) {
