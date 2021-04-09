@@ -24,7 +24,6 @@ void ServiceNode::updateUtil(double mostRecentDep) {
 
 bool ServiceNode::enterQueue(Job job) {
   if (jobQueue.size() < maxQueueSz) {
-
     if (!jobQueue.empty()) {
       job.setDelay(jobQueue.back().calcDeparture());
     }
@@ -44,22 +43,12 @@ bool ServiceNode::enterQueue(Job job) {
 }
 
 bool ServiceNode::enterNode(Job job) {
-  // MOVE THESE TO PROCESSJOBS
-  // update the running average service time
-  updateTotST(job.getServiceTime());
-
-  // update the running average of the utilization
-  updateUtil(job.calcDeparture());
-
-  ++numJobsProcessed;  // this Job can be processed
-
-
   double currArrival{job.getArrival()};
   if (maxQueueSz > 0) {
     processQueue(currArrival);
   }
 
-  bool isEnter {false};
+  bool isEnter{false};
 
   if (job.getArrival() < lastDeparture) {
     // the server is busy and there's no queue, so job can't wait here
@@ -68,19 +57,19 @@ bool ServiceNode::enterNode(Job job) {
     }
 
     bool isInQueue{enterQueue(job)};
-    isEnter = isInQueue; // if true, the job was able to enter the queue
+    isEnter = isInQueue;  // if true, the job was able to enter the queue
   }
 
   // empty queue, job can queue (for both cases)
-  isEnter = (jobQueue.size() == 0); 
+  isEnter |= (jobQueue.size() == 0);
 
   if (isEnter) {
-    updateUtil(job.calcDeparture());
-    updateTotST(job.getServiceTime());
+    updateUtil(job.calcDeparture());    // update utilization
+    updateTotST(job.getServiceTime());  // increase the total ST
+    ++numJobsProcessed;                 // this Job can be processed
+    // update the last Job's departure time
+    lastDeparture = job.calcDeparture();
   }
-
-  // update the last Job's departure time
-  lastDeparture = job.calcDeparture();
 
   // return the result of this expression
   // If work-conserve, then the server can start work immidiately.
