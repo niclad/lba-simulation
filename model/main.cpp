@@ -10,6 +10,7 @@
 // Global variables
 const int DAY_SEC{24 * 60 * 60};         // seconds in a day
 const int NOON_TIME{DAY_SEC / 2};        // time of day for noon
+const int HOUR_SEC{DAY_SEC / 24};
 const double START{0.0};                 // start time for the simulation
 const double END{(double)DAY_SEC * 30};  // end time for the simulation
 
@@ -52,13 +53,17 @@ int main() {
   // test with random LBA
   std::cout << "+-------Random--------+" << std::endl;
   test_lba(lba::random, nodes, 50);
+
+  // testing sqms simulation
+  sqmsSimulation(3 /*nodes*/, lba::roundrobin, 50000/*jobs*/);
 }
 
 // get a service time for a job
 // NOTE: This makes no sense
+//     EDIT: I think it makes sense now
 double getArrival() {
   static double prevArr{START};          // the previous arrival time
-  double st{Uniform(prevArr, DAY_SEC)};  // choose an arrival time
+  double st{Uniform(0, NOON_TIME)};  // choose an arrival time
   prevArr += st;                         // update the the
 
   return prevArr;
@@ -93,7 +98,7 @@ std::vector<ServiceNode> buildNodeList(int nNodes, int qSz) {
  * @return int The index of the node to send a job to
  */
 int dispatcher(std::vector<ServiceNode> nodes,
-               std::function<int(std::vector<ServiceNode>)> lba) {
+        std::function<int(std::vector<ServiceNode>)> lba) {
   int nodeIdx{-1};       // -1 as no node will have this index
   nodeIdx = lba(nodes);  // pick a node using the LBA
 
@@ -117,4 +122,27 @@ void sqmsSimulation(int nNodes, lba_alg lba, int nJobs) {
    * Run simulation to n jobs
    */
 
+  // build node list
+  std::vector<ServiceNode> nodes{buildNodeList(nNodes, 5/*arbitrary value*/)};
+
+  // run for the number of jobs
+  for (int ii = 0; ii < nJobs; ii++) {
+    // get the next jobs arrival
+    Job job{getArrival()};
+
+    // determine receiving server based on lba
+    int receiver{dispatcher(nodes, lba)};
+    std::cout << "Node " << receiver << " selected for job" << std::endl;
+
+    // attempt to enter the job into the node
+    if (nodes[receiver].enterNode(job)) {
+      // node added successfully
+      std::cout << "Job successfully added" << std::endl;
+    }
+    else {
+      // node unable to be added, this is where different rejection
+      // techiniques could be used
+      std::cout << "Job unsuccessfully added" << std::endl;
+    }
+  }
 }
