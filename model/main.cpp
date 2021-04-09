@@ -54,8 +54,12 @@ int main() {
   std::cout << "+-------Random--------+" << std::endl;
   test_lba(lba::random, nodes, 50);
 
+  int nNodes{3};
+  int qSize{5};
+  int nJobs{50000};
+
   // testing sqms simulation
-  sqmsSimulation(3 /*nodes*/, lba::roundrobin, 50000 /*jobs*/);
+  mqmsSimulation(nNodes, lba::roundrobin, qSize, nJobs);
 }
 
 // get a service time for a job
@@ -63,7 +67,7 @@ int main() {
 //     EDIT: I think it makes sense now
 double getArrival() {
   static double prevArr{START};      // the previous arrival time
-  double st{Uniform(0, NOON_TIME)};  // choose an arrival time
+  double st{Uniform(0, HOUR_SEC)};  // choose an arrival time
   prevArr += st;                     // update the the
 
   return prevArr;
@@ -105,16 +109,17 @@ int dispatcher(std::vector<ServiceNode> nodes, lba_alg lba) {
 }
 
 /**
- * @brief Run a single-queue, multi-server simulation
+ * @brief Run a multi-queue, multi-server simulation
  *
  * The simulation will generate it's own list of nodes and use the LBA to send
  * nJobs to the nodes in the model.
  *
  * @param nNodes The number of nodes to use in the simulation
+ * @param qSize The number of jobs allowed in each server's queue
  * @param lba The node balancing
  * @param nJobs The number of jobs to "process" in the simulation
  */
-void sqmsSimulation(int nNodes, lba_alg lba, int nJobs) {
+void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
   /* TO-DO:
    * Actually implement code.
    * Generate nodes list
@@ -122,7 +127,7 @@ void sqmsSimulation(int nNodes, lba_alg lba, int nJobs) {
    */
 
   // build node list
-  std::vector<ServiceNode> nodes{buildNodeList(nNodes, 5 /*arbitrary value*/)};
+  std::vector<ServiceNode> nodes{buildNodeList(nNodes, qSize)};
 
   // run for the number of jobs
   for (int ii = 0; ii < nJobs; ii++) {
