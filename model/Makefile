@@ -3,18 +3,18 @@ CC = gcc
 CXFLAGS = -Wall -std=c++14
 CCFLAGS = -Wall -std=c99
 
-default: temp.out
+default: main.out
 
-temp.out: temp.o Job.o Node.o LoadBalancing.o rngs.o rvgs.o
+main.out: main.o Job.o Node.o LoadBalancing.o rngs.o rvgs.o
 	$(CXX) $(CXFLAGS) $? -o $@
 
-temp.o: temp.cpp Job.h Node.h LoadBalancing.h
+main.o: main.cpp Job.h Node.h LoadBalancing.h
 	$(CXX) $(CXFLAGS) -c $*.cpp
 
 LoadBalancing.o: LoadBalancing.cpp LoadBalancing.h
 	$(CXX) $(CXFLAGS) -c $*.cpp
 
-Node.o: Node.cpp Node.h
+Node.o: Node.cpp Node.h Job.h
 	$(CXX) $(CXFLAGS) -c $*.cpp
 
 Job.o: Job.cpp Job.h
