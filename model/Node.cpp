@@ -26,6 +26,10 @@ bool ServiceNode::enterQueue(Job job) {
   if (jobQueue.size() < maxQueueSz) {
     ++numJobsProcessed;  // this Job can be processed
 
+    if (!jobQueue.empty()) {
+        job.setDelay(jobQueue.back().calcDeparture());
+    }
+
     jobQueue.push(job);
 
     // MOVE THESE TO PROCESSJOBS
@@ -34,6 +38,12 @@ bool ServiceNode::enterQueue(Job job) {
 
     // update the running average of the utilization
     updateUtil(job.calcDeparture());
+
+    // process the existing queue now that a new arrival has come
+    // problem, how to handle case where queue is full 
+    // - can't add new job to queue so the processQueue() function won't
+    //   be able to see the "current" time
+    //processQueue();
 
     return true;
   }
@@ -73,6 +83,35 @@ void ServiceNode::processQueue() {
     // is found.
     double beginTime{};
     // process queue
+
+    // get the most recent arrival time (back of queue)
+    double currentTime{jobQueue.back().getArrival()};
+    // if the job in the server is still being processed
+    if (currentTime > lastDeparture) {
+      while (!jobQueue.empty()) {
+        // if front of queue has already departed
+        if (jobQueue.front().calcDeparture() < currentTime) {
+            // insert calculations here maybe?
+
+            // remove job from queue
+            jobQueue.pop();
+        }
+        else {
+            break;
+        }
+      }
+      
+      // update job in servers departure time
+      if (!jobQueue.empty()) {
+        // first job in what's left is being processed in server
+        lastDeparture = jobQueue.front().calcDeparture();
+        jobQueue.pop();
+      }
+      else {
+        // completed all jobs
+        lastDeparture = 0;
+      }
+    }
   }
 }
 
