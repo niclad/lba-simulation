@@ -1,4 +1,5 @@
 #include <functional>
+#include <fstream>
 #include <iostream>
 #include <vector>
 
@@ -17,6 +18,7 @@ const double END{(double)DAY_SEC * 30};  // end time for the simulation
 // Type definition aliases
 typedef int node_idx;
 typedef std::function<node_idx(std::vector<ServiceNode>)> lba_alg;
+typedef std::vector<ServiceNode> node_list;
 
 // tests a load balancing algorithm with 'nodes', 'num_iter' times
 void test_lba(std::function<int(std::vector<ServiceNode>)> lba,
@@ -27,33 +29,36 @@ void test_lba(std::function<int(std::vector<ServiceNode>)> lba,
   }
 }
 
+// Function declarations
 double getArrival();
-std::vector<ServiceNode> buildNodeList(int nNodes, int qSz);
-node_idx dispatcher(std::vector<ServiceNode> nodes, lba_alg lba);
+node_list buildNodeList(int nNodes, int qSz);
+node_idx dispatcher(node_list nodes, lba_alg lba);
 
 /* TO-DO:
  * Implement the function declartions below this list....
  */
 void sqmsSimulation(int nNodes, lba_alg lba, int nJobs);
 void mqmsSimulation(int nNodes, lba_alg lba, int qSz, int nJobs);
+void serverDistribution(int nNodes, int nJobs);
 
 int main() {
-  std::vector<ServiceNode> nodes = {};
-  for (int ii = 0; ii < 10; ii++) {
-    nodes.push_back(ServiceNode(ii));
-  }
+  serverDistribution(100, 10000);
+  // std::vector<ServiceNode> nodes = {};
+  // for (int ii = 0; ii < 10; ii++) {
+  //   nodes.push_back(ServiceNode(ii));
+  // }
 
-  // generic LBA and ServiceNode test
-  lba::testLBA(nodes);
+  // // generic LBA and ServiceNode test
+  // lba::testLBA(nodes);
 
-  // test with round robin LBA
-  std::cout << "+-------Round Robin--------+" << std::endl;
-  test_lba(lba::roundrobin, nodes);
+  // // test with round robin LBA
+  // std::cout << "+-------Round Robin--------+" << std::endl;
+  // test_lba(lba::roundrobin, nodes);
 
-  // test with random LBA
-  std::cout << "+-------Random--------+" << std::endl;
-  test_lba(lba::random, nodes, 50);
-
+  // // test with random LBA
+  // std::cout << "+-------Random--------+" << std::endl;
+  // test_lba(lba::random, nodes, 50);
+  
   int nNodes{3};
   int qSize{5};
   int nJobs{50000};
@@ -80,8 +85,8 @@ double getArrival() {
  * @param qSz The queue size of the nodes
  * @return std::vector<ServiceNode>
  */
-std::vector<ServiceNode> buildNodeList(int nNodes, int qSz) {
-  std::vector<ServiceNode> tempList;
+node_list buildNodeList(int nNodes, int qSz) {
+  node_list tempList;
 
   for (int id = 0; id < nNodes; id++) {
     tempList.push_back(ServiceNode(id, qSz));
@@ -101,7 +106,7 @@ std::vector<ServiceNode> buildNodeList(int nNodes, int qSz) {
  * @param lba The load-balancing algorithm to use to choose a node
  * @return int The index of the node to send a job to
  */
-int dispatcher(std::vector<ServiceNode> nodes, lba_alg lba) {
+int dispatcher(node_list nodes, lba_alg lba) {
   int nodeIdx{-1};       // -1 as no node will have this index
   nodeIdx = lba(nodes);  // pick a node using the LBA
 
@@ -127,7 +132,7 @@ void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
    */
 
   // build node list
-  std::vector<ServiceNode> nodes{buildNodeList(nNodes, qSize)};
+  node_list nodes{buildNodeList(nNodes, qSize)};
 
   // run for the number of jobs
   for (int ii = 0; ii < nJobs; ii++) {
@@ -148,4 +153,36 @@ void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
       std::cout << "Job unsuccessfully added" << std::endl;
     }
   }
+}
+
+/**
+ * @brief Find the distribution of servers for a load-balancing algorithm
+ * 
+ * @param nNodes The number of nodes for the alogrithm to choose from
+ * @param nJobs The number of "jobs" to send to the nodes
+ */
+void serverDistribution(int nNodes, int nJobs) {
+  std::cout << "> Testing node choice distribution..." << std::endl;
+  node_list nodes{buildNodeList(nNodes, 0)}; // queue size doesn't matter
+
+  // list of available load-balancing algorithms
+  std::vector<lba_alg> funcs = {
+    lba::roundrobin, 
+    lba::random, 
+    lba::utilizationbased,
+    lba::leastconnections
+  };
+
+  std::ofstream lba_dat("lba-data.csv");
+
+  for (lba_alg alg : funcs) {
+    for (int i = 0; i < nJobs-1; i++) {
+      lba_dat << alg(nodes) << ",";
+    }
+    lba_dat << alg(nodes) << std::endl;
+  }
+
+  lba_dat.close();
+
+  std::cout << "> ... done" << std::endl;
 }
