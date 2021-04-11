@@ -19,7 +19,7 @@ ServiceNode::ServiceNode(int id, size_t maxQueueSz)
       lastDeparture{0.0} {}
 
 void ServiceNode::updateUtil(double mostRecentDep) {
-  util = ((double)numJobsProcessed / mostRecentDep) * (totST / numJobsProcessed);
+  util = ((double)numJobsProcessed / mostRecentDep) * calcAvgSt();
 }
 
 bool ServiceNode::enterQueue(Job job) {
@@ -130,6 +130,10 @@ int ServiceNode::getId() const { return id; }
 double ServiceNode::getUtil() const { return util; }
 
 int ServiceNode::getQueueLength() const { return jobQueue.size(); }
+
+double ServiceNode::calcAvgSt() {
+  return totST / numJobsProcessed;
+}
 
 double ServiceNode::updateTotST(double lastST) {
   totST = totST + lastST;

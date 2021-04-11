@@ -115,6 +115,16 @@ class ServiceNode {
    * @return double The average service time
    */
   double getAvgSt() const;
+  
+  /**
+   * @brief Calculate the average service time.
+   * 
+   * Calculate the average service time for this node at the "point in time" for
+   * when this function is called.
+   * 
+   * @return double 
+   */
+  double calcAvgSt();
 
  private:
   /**
