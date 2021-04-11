@@ -153,6 +153,12 @@ void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
       std::cout << "Job unsuccessfully added" << std::endl;
     }
   }
+
+  // get simulation results
+  for (auto node : nodes) {
+    std::cout << "Utilization: " << node.getUtil() << "   Average Service Time: " 
+      << node.calcAvgSt() << std::endl;
+  }
 }
 
 /**
