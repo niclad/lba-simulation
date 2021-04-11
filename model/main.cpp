@@ -35,6 +35,7 @@ void test_lba(std::function<int(std::vector<ServiceNode>)> lba,
 double getArrival();
 node_list buildNodeList(int nNodes, int qSz);
 node_idx dispatcher(node_list nodes, lba_alg lba);
+void log_sim(lba_alg lba, int nNodes, int qSize, int nJobs, node_list nodes);
 
 /* TO-DO:
  * Implement the function declartions below this list....
@@ -117,6 +118,36 @@ int dispatcher(node_list nodes, lba_alg lba) {
   return nodeIdx;
 }
 
+/**
+ * @brief log information and utilization results of a simulation run
+ * 
+ *  Call at end of mqmsSimulation and sqmsSimulation
+ *
+ *
+ * @param lba The load-balancing algorithm to use to choose a node
+ * @param nNodes The number of nodes to use in the simulation
+ * @param qSize The number of jobs allowed in each server's queue
+ * @param nJobs The number of jobs to "process" in the simulation
+ * @param nodes node_list of nodes to get node utilizations.
+ * @return void Writes/ appends to a csv file to log info and utilization results
+ */
+void log_sim(lba_alg lba, int nNodes, int qSize, int nJobs, node_list nodes)
+{
+    std::string alg= std::to_string(lba);   // not sure if this will work, if not can just do if or case/switches to get name of alg
+    std:: ofstream logfile;
+    logfile.open("simlog.csv", std::ios::app);
+    logfile << alg <<","<< nJobs <<","<< nNodes <<","<< qSize;
+    for(int i=0; i<nNodes; i++)
+    {
+        logfile<<","<< nodes[i].getUtil();
+    }
+    logfile<<",\n";
+    logfile.close();
+}
+
+  
+  
+  
 /**
  * @brief Run a multi-queue, multi-server simulation
  *
