@@ -5,7 +5,7 @@ import numpy as np
 dist_data = np.genfromtxt('../model/lba-data.csv', delimiter=',')
 
 # set up the plot's axes
-fig, axs = plt.subplots(2, 2, sharex=True, sharey=False)
+fig, axs = plt.subplots(2, 2, figsize=(16, 9), sharex=True, sharey=False)
 titles = [ # the titles for the subplots
   'Round robin',
   'Random',
@@ -20,7 +20,7 @@ for i, ax in enumerate(axs.flat):
   freq = freq / np.sum(freq)
 
   # plot the histogram
-  ax.stem(uniq, freq, linefmt='k-', markerfmt='.', basefmt=' ', bottom=0)
+  ax.stem(uniq, freq, linefmt='k-', markerfmt='k*', basefmt=' ', bottom=0)
   ax.set_title(titles[i])
 
 # set up the shared axes labels etc.
