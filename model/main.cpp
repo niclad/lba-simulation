@@ -1,3 +1,4 @@
+#include <fstream>
 #include <functional>
 #include <iostream>
 #include <vector>
@@ -13,10 +14,12 @@ const int NOON_TIME{DAY_SEC / 2};  // time of day for noon
 const int HOUR_SEC{DAY_SEC / 24};
 const double START{0.0};                 // start time for the simulation
 const double END{(double)DAY_SEC * 30};  // end time for the simulation
+enum class Model { mqms, sqms };
 
 // Type definition aliases
 typedef int node_idx;
 typedef std::function<node_idx(std::vector<ServiceNode>)> lba_alg;
+typedef std::vector<ServiceNode> node_list;
 
 // tests a load balancing algorithm with 'nodes', 'num_iter' times
 void test_lba(std::function<int(std::vector<ServiceNode>)> lba,
@@ -36,6 +39,8 @@ node_idx dispatcher(std::vector<ServiceNode> nodes, lba_alg lba);
  */
 void sqmsSimulation(int nNodes, lba_alg lba, int nJobs);
 void mqmsSimulation(int nNodes, lba_alg lba, int qSz, int nJobs);
+void accumStats(node_list nodes, int nJobs, Model modelName,
+                std::string funcName);
 
 int main() {
   std::vector<ServiceNode> nodes = {};
@@ -66,9 +71,9 @@ int main() {
 // NOTE: This makes no sense
 //     EDIT: I think it makes sense now
 double getArrival() {
-  static double prevArr{START};      // the previous arrival time
+  static double prevArr{START};     // the previous arrival time
   double st{Uniform(0, HOUR_SEC)};  // choose an arrival time
-  prevArr += st;                     // update the the
+  prevArr += st;                    // update the the
 
   return prevArr;
 }
@@ -148,4 +153,23 @@ void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
       std::cout << "Job unsuccessfully added" << std::endl;
     }
   }
+}
+
+void accumStats(node_list nodes, int nJobs, Model modelName, std::string funcName) {
+  std::string model = (modelName == Model::mqms) ? "mqms" : "sqms";
+  std::ofstream data(model + funcName + ".csv");
+
+  // write the headers
+  data << "sid,avg_x,avg_s,n_jobs" << std::endl;
+
+  // will need to get n_jobs
+  int nodeId{0};
+  for (ServiceNode node : nodes) {
+    data << nodeId++ << ","
+         << node.getUtil() << ","
+         << node.getAvgSt() << ","
+         << node.getNumProcJobs() << std::endl;
+  }
+
+  data.close();
 }
