@@ -41,12 +41,9 @@ node_idx dispatcher(node_list nodes, lba_alg lba);
  */
 void sqmsSimulation(int nNodes, lba_alg lba, int nJobs);
 void mqmsSimulation(int nNodes, lba_alg lba, int qSz, int nJobs);
-<<<<<<< HEAD
 void accumStats(node_list nodes, int nJobs, Model modelName,
                 std::string funcName);
-=======
 void serverDistribution(int nNodes, int nJobs);
->>>>>>> 3a163ed0147240ed7b2a53f503d37a4202752589
 
 int main() {
   serverDistribution(100, 10000);
