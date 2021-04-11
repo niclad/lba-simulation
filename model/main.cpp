@@ -1,4 +1,5 @@
 #include <functional>
+#include <fstream>
 #include <iostream>
 #include <vector>
 
@@ -28,6 +29,7 @@ void test_lba(std::function<int(std::vector<ServiceNode>)> lba,
   }
 }
 
+// Function declarations
 double getArrival();
 node_list buildNodeList(int nNodes, int qSz);
 node_idx dispatcher(node_list nodes, lba_alg lba);
@@ -37,26 +39,28 @@ node_idx dispatcher(node_list nodes, lba_alg lba);
  */
 void sqmsSimulation(int nNodes, lba_alg lba, int nJobs);
 void mqmsSimulation(int nNodes, lba_alg lba, int qSz, int nJobs);
+void serverDistribution(int nNodes, int nJobs);
 
 int main() {
-  std::vector<ServiceNode> nodes = {};
-  for (int ii = 0; ii < 10; ii++) {
-    nodes.push_back(ServiceNode(ii));
-  }
+  serverDistribution(100, 10000);
+  // std::vector<ServiceNode> nodes = {};
+  // for (int ii = 0; ii < 10; ii++) {
+  //   nodes.push_back(ServiceNode(ii));
+  // }
 
-  // generic LBA and ServiceNode test
-  lba::testLBA(nodes);
+  // // generic LBA and ServiceNode test
+  // lba::testLBA(nodes);
 
-  // test with round robin LBA
-  std::cout << "+-------Round Robin--------+" << std::endl;
-  test_lba(lba::roundrobin, nodes);
+  // // test with round robin LBA
+  // std::cout << "+-------Round Robin--------+" << std::endl;
+  // test_lba(lba::roundrobin, nodes);
 
-  // test with random LBA
-  std::cout << "+-------Random--------+" << std::endl;
-  test_lba(lba::random, nodes, 50);
+  // // test with random LBA
+  // std::cout << "+-------Random--------+" << std::endl;
+  // test_lba(lba::random, nodes, 50);
 
-  // testing sqms simulation
-  sqmsSimulation(3 /*nodes*/, lba::roundrobin, 50000 /*jobs*/);
+  // // testing sqms simulation
+  // sqmsSimulation(3 /*nodes*/, lba::roundrobin, 50000 /*jobs*/);
 }
 
 // get a service time for a job
@@ -144,4 +148,36 @@ void sqmsSimulation(int nNodes, lba_alg lba, int nJobs) {
       std::cout << "Job unsuccessfully added" << std::endl;
     }
   }
+}
+
+/**
+ * @brief Find the distribution of servers for a load-balancing algorithm
+ * 
+ * @param nNodes The number of nodes for the alogrithm to choose from
+ * @param nJobs The number of "jobs" to send to the nodes
+ */
+void serverDistribution(int nNodes, int nJobs) {
+  std::cout << "> Testing node choice distribution..." << std::endl;
+  node_list nodes{buildNodeList(nNodes, 0)}; // queue size doesn't matter
+
+  // list of available load-balancing algorithms
+  std::vector<lba_alg> funcs = {
+    lba::roundrobin, 
+    lba::random, 
+    lba::utilizationbased,
+    lba::leastconnections
+  };
+
+  std::ofstream lba_dat("lba-data.csv");
+
+  for (lba_alg alg : funcs) {
+    for (int i = 0; i < nJobs-1; i++) {
+      lba_dat << alg(nodes) << ",";
+    }
+    lba_dat << alg(nodes) << std::endl;
+  }
+
+  lba_dat.close();
+
+  std::cout << "> ... done" << std::endl;
 }
