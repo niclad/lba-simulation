@@ -102,6 +102,20 @@ class ServiceNode {
    */
   void processQueue(double currArrival);
 
+  /**
+   * @brief Get the number of jobs processed by this node.
+   * 
+   * @return int The number of jobs processed
+   */
+  int getNumProcJobs() const;
+
+  /**
+   * @brief Calculate and get the average service time
+   * 
+   * @return double The average service time
+   */
+  double getAvgSt() const;
+
  private:
   /**
    * @brief Calculate the average service time

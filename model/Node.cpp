@@ -19,7 +19,7 @@ ServiceNode::ServiceNode(int id, size_t maxQueueSz)
       lastDeparture{0.0} {}
 
 void ServiceNode::updateUtil(double mostRecentDep) {
-  util = ((double)numJobsProcessed / mostRecentDep) * totST;
+  util = ((double)numJobsProcessed / mostRecentDep) * (totST / numJobsProcessed);
 }
 
 bool ServiceNode::enterQueue(Job job) {
@@ -64,6 +64,7 @@ bool ServiceNode::enterNode(Job job) {
   // (w/ and w/o queueueus)
   isEnter |= (jobQueue.size() == 0);
 
+  // job can enter, so update stats
   if (isEnter) {
     updateUtil(job.calcDeparture());    // update utilization
     updateTotST(job.getServiceTime());  // increase the total ST
@@ -134,6 +135,10 @@ double ServiceNode::updateTotST(double lastST) {
   totST = totST + lastST;
   return totST;
 }
+
+int ServiceNode::getNumProcJobs() const { return numJobsProcessed; }
+
+double ServiceNode::getAvgSt() const {return totST / numJobsProcessed; }
 
 std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
   out << "ID: " << node.getId() << ", util: " << node.getUtil();
