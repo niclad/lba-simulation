@@ -25,7 +25,7 @@ int lba::utilizationbased(std::vector<ServiceNode> nodeList) {
     int least_utilized{0};
 
     // find the index with the least utilization
-    for (size_t ii = 1; ii < nodeList.size(); ii++) {
+    for (size_t ii = 0; ii < nodeList.size(); ii++) {
         if (nodeList[least_utilized].getUtil() >
                 nodeList[ii].getUtil()) {
             least_utilized = ii;
@@ -39,7 +39,7 @@ int lba::leastconnections(std::vector<ServiceNode> nodeList) {
 
     // find the index with the least number of jobs
     for (size_t ii = 1; ii < nodeList.size(); ii++) {
-        if (nodeList[least_connections].getQueueLength() <
+        if (nodeList[least_connections].getQueueLength() >
                 nodeList[ii].getQueueLength()) {
             least_connections = ii;
         }
@@ -57,4 +57,24 @@ int lba::testLBA(std::vector<ServiceNode> nodeList) {
   }
 
   return -1;
+}
+
+std::function<int(std::vector<ServiceNode>)>
+lba::getLba(std::string name)
+{
+    if (name == "rand") {
+        return lba::random;
+    }
+    else if (name == "util") {
+        return lba::utilizationbased;
+    }
+    else if (name == "least") {
+        return lba::leastconnections;
+    }
+    else if (name == "round") {
+        return lba::roundrobin;
+    }
+    else {
+        return nullptr;
+    }
 }
