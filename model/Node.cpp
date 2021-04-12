@@ -22,7 +22,7 @@ void ServiceNode::updateUtil(double mostRecentDep) {
   util = ((double)numJobsProcessed / mostRecentDep) * calcAvgSt();
 }
 
-bool ServiceNode::enterQueue(Job job) {
+bool ServiceNode::enterQueue(Job& job) {
   if (jobQueue.size() < maxQueueSz) {
     if (!jobQueue.empty()) {
       job.setDelay(jobQueue.back().calcDeparture());
@@ -66,8 +66,8 @@ bool ServiceNode::enterNode(Job job) {
 
   // job can enter, so update stats
   if (isEnter) {
-    updateTotST(job.getServiceTime());  // increase the total ST
     ++numJobsProcessed;                 // this Job can be processed
+    updateTotST(job.getServiceTime());  // increase the total ST
     updateUtil(job.calcDeparture());    // update utilization
     // update the last Job's departure time
     lastDeparture = job.calcDeparture();
@@ -111,15 +111,10 @@ void ServiceNode::processQueue(double currArrival) {
           break;
         }
       }
-
       // update job in servers departure time
       if (!jobQueue.empty()) {
         // first job in what's left is being processed in server
-        lastDeparture = jobQueue.front().calcDeparture();
         jobQueue.pop();
-      } else {
-        // completed all jobs
-        lastDeparture = 0;
       }
     }
   }

@@ -55,7 +55,7 @@ class ServiceNode {
    * @return true The job was successfully added to the queue
    * @return false The queue is full and the job could not be added to the queue
    */
-  bool enterQueue(Job job);
+  bool enterQueue(Job& job);
 
   /**
    * @brief Determine if a job can enter this ServiceNode.
