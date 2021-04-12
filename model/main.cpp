@@ -12,7 +12,7 @@
 
 // Type definition aliases
 typedef int node_idx;
-typedef std::function<node_idx(std::vector<ServiceNode>)> lba_func;
+typedef std::function<node_idx(std::vector<ServiceNode>, double)> lba_func;
 typedef std::vector<ServiceNode> node_list;
 typedef int lba_alg;
 
@@ -46,6 +46,13 @@ const std::vector<std::string> LBA_NAMES = {
   "leastcxns"
 };
 // =========================== END GLOBAL VARIABLES ============================
+
+lba_alg name_to_index(std::string name) {
+    for (size_t ii = 0; ii < LBA_NAMES.size(); ii++){
+        if (name == LBA_NAMES[ii]) return ii;
+    }
+    return -1;
+}
 
 
 // tests a load balancing algorithm with 'nodes', 'num_iter' times
@@ -82,13 +89,15 @@ int main(int argc, char* argv[]) {
     return 1;
   }
   int nNodes{atoi(argv[1])};
-  lba_alg lba{lba::getLba(argv[2])};
-  if (!lba) {
+  lba_alg lba{name_to_index(argv[2])};
+  if (lba < 0 || lba > (int)LBA_FUNCTIONS.size()) {
     std::cerr << "Invalid load balancing algorithm: " 
             << argv[2] << std::endl;
+    std::cerr << "Possible choices are: ";
+    for (auto choice : LBA_NAMES) std::cout << choice << " ";
+    std::cout << std::endl;
     return 1;
   }
-  alg = argv[2];
   int qSize{atoi(argv[3])};
   int nJobs{atoi(argv[4])};
   std::cout << "Running simulation with: "
@@ -114,12 +123,8 @@ int main(int argc, char* argv[]) {
   // std::cout << "+-------Random--------+" << std::endl;
   // test_lba(lba::random, nodes, 50);
 
-  int nNodes{3};
-  int qSize{5};
-  int nJobs{50000};
-
   // testing sqms simulation
-  mqmsSimulation(nNodes, lba::roundrobin, qSize, nJobs);
+  mqmsSimulation(nNodes, lba, qSize, nJobs);
 
   // test the another simulation
   nNodes = 3;
@@ -165,9 +170,9 @@ node_list buildNodeList(int nNodes, int qSz) {
  * @param lba The load-balancing algorithm to use to choose a node
  * @return int The index of the node to send a job to
  */
-int dispatcher(node_list nodes, lba_func lba) {
+int dispatcher(node_list nodes, lba_func lba, double currT) {
   int nodeIdx{-1};       // -1 as no node will have this index
-  nodeIdx = lba(nodes);  // pick a node using the LBA
+  nodeIdx = lba(nodes, currT);  // pick a node using the LBA
 
   return nodeIdx;
 }
@@ -225,7 +230,7 @@ void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
     Job job{getArrival()};
 
     // determine receiving server based on lba
-    int receiver{dispatcher(nodes, alg)};
+    int receiver{dispatcher(nodes, alg, job.getArrival())};
     // std::cout << "Node " << receiver << " selected for job" << std::endl;
 
     // attempt to enter the job into the node
@@ -300,9 +305,9 @@ void serverDistribution(int nNodes, int nJobs) {
 
   for (lba_func alg : funcs) {
     for (int i = 0; i < nJobs - 1; i++) {
-      lba_dat << alg(nodes) << ",";
+      lba_dat << alg(nodes, 0 /*lbas depend on dynamic state*/) << ",";
     }
-    lba_dat << alg(nodes) << std::endl;
+    lba_dat << alg(nodes, 0 /*lbas depend on dynamic state*/) << std::endl;
   }
 
   lba_dat.close();
