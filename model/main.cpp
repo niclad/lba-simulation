@@ -101,10 +101,10 @@ int main() {
   // mqmsSimulation(nNodes, lba::roundrobin, qSize, nJobs);
 
   // test the another simulation
-  nNodes = 100;
+  nNodes = 3;
   qSize = 3;
-  nJobs = 100000000;
-  mqmsSimulation(nNodes, Algs.rand, qSize, nJobs);
+  nJobs = 100;
+  mqmsSimulation(nNodes, Algs.util, qSize, nJobs);
 }
 
 // get a service time for a job
@@ -220,8 +220,7 @@ void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
 
   // get simulation results
   for (auto node : nodes) {
-    std::cout << "Utilization: " << node.getUtil()
-              << "   Average Service Time: " << node.calcAvgSt() << std::endl;
+    std::cout << node << std::endl;
   }
 
   // TODO: make this dependent on CLI flag
