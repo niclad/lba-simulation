@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <cstdlib>
 
 #include "Job.h"
 #include "LoadBalancing.h"
@@ -16,6 +17,7 @@ const int HOUR_SEC{DAY_SEC / 24};
 const double START{0.0};                 // start time for the simulation
 const double END{(double)DAY_SEC * 30};  // end time for the simulation
 enum class Model { mqms, sqms };
+std::string alg{""};
 
 // Type definition aliases
 typedef int node_idx;
@@ -46,7 +48,28 @@ void accumStats(node_list nodes, int nJobs, Model modelName,
                 std::string funcName);
 void serverDistribution(int nNodes, int nJobs);
 
-int main() {
+int main(int argc, char* argv[]) {
+  // get command line arguments
+  if (argc != 5) {
+    std::cout << "Usage: " << argv[0] << " ";
+    std::cout << "<nNodes> <lba_alg> <qSize> <nJobs>" << std::endl;
+    return 1;
+  }
+  int nNodes{atoi(argv[1])};
+  lba_alg lba{lba::getLba(argv[2])};
+  if (!lba) {
+    std::cerr << "Invalid load balancing algorithm: " 
+            << argv[2] << std::endl;
+    return 1;
+  }
+  alg = argv[2];
+  int qSize{atoi(argv[3])};
+  int nJobs{atoi(argv[4])};
+  std::cout << "Running simulation with: "
+      << nNodes << " Nodes, "
+      << argv[2] << " Algorithm, "
+      << qSize << " Queue length, "
+      << nJobs << " Jobs." << std::endl;
   serverDistribution(100, 10000);
   // std::vector<ServiceNode> nodes = {};
   // for (int ii = 0; ii < 10; ii++) {
@@ -64,12 +87,9 @@ int main() {
   // std::cout << "+-------Random--------+" << std::endl;
   // test_lba(lba::random, nodes, 50);
   
-  int nNodes{3};
-  int qSize{5};
-  int nJobs{50000};
 
   // testing sqms simulation
-  mqmsSimulation(nNodes, lba::roundrobin, qSize, nJobs);
+  mqmsSimulation(nNodes, lba, qSize, nJobs);
 }
 
 // get a service time for a job
@@ -195,6 +215,7 @@ void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
       << node.calcAvgSt() << std::endl;
   }
 }
+
 
 /**
  * @brief Find the distribution of servers for a load-balancing algorithm
