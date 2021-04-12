@@ -2,6 +2,7 @@
 #include <functional>
 #include <iostream>
 #include <vector>
+#include <cstdlib>
 
 #include "Job.h"
 #include "LoadBalancing.h"
@@ -73,8 +74,28 @@ void serverDistribution(int nNodes, int nJobs);
 void log_sim(std::string alg, int nNodes, int qSize, int nJobs,
              node_list nodes);
 
-int main() {
-  std::cout << "Running load-balancing simulation." << std::endl;
+int main(int argc, char* argv[]) {
+  // get command line arguments
+  if (argc != 5) {
+    std::cout << "Usage: " << argv[0] << " ";
+    std::cout << "<nNodes> <lba_alg> <qSize> <nJobs>" << std::endl;
+    return 1;
+  }
+  int nNodes{atoi(argv[1])};
+  lba_alg lba{lba::getLba(argv[2])};
+  if (!lba) {
+    std::cerr << "Invalid load balancing algorithm: " 
+            << argv[2] << std::endl;
+    return 1;
+  }
+  alg = argv[2];
+  int qSize{atoi(argv[3])};
+  int nJobs{atoi(argv[4])};
+  std::cout << "Running simulation with: "
+      << nNodes << " Nodes, "
+      << argv[2] << " Algorithm, "
+      << qSize << " Queue length, "
+      << nJobs << " Jobs." << std::endl;
   PutSeed(SEED);  // seed the RNG
   serverDistribution(100, 10000);
   // std::vector<ServiceNode> nodes = {};
@@ -98,7 +119,7 @@ int main() {
   int nJobs{50000};
 
   // testing sqms simulation
-  // mqmsSimulation(nNodes, lba::roundrobin, qSize, nJobs);
+  mqmsSimulation(nNodes, lba::roundrobin, qSize, nJobs);
 
   // test the another simulation
   nNodes = 3;
@@ -227,6 +248,38 @@ void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
   // also, need better way to get alg name
   accumStats(nodes, nJobs, Model::mqms, funcName);
   log_sim(funcName, nNodes, qSize, nJobs, nodes);
+}
+
+/**
+ * @brief Run a multi-queue, multi-server simulation
+ *
+ * The simulation will generate it's own list of nodes and use the LBA to send
+ * nJobs to the nodes in the model.
+ *
+ * @param nNodes The number of nodes to use in the simulation
+ * @param lba The node balancing
+ * @param nJobs The number of jobs to "process" in the simulation
+ */
+void sqmsSimulation(int nNodes, lba_alg lba, int nJobs) {
+  /* TO-DO:
+   * Actually implement code.
+   * Generate nodes list
+   * Run simulation to n jobs
+   */
+
+  // build node list
+  node_list nodes{buildNodeList(nNodes, 0)};
+
+  // run for the number of jobs
+  for (int ii = 0; ii < nJobs; ii++) {
+    
+  }
+
+  // get simulation results
+  for (auto node : nodes) {
+    std::cout << "Utilization: " << node.getUtil() << "   Average Service Time: " 
+      << node.calcAvgSt() << std::endl;
+  }
 }
 
 /**

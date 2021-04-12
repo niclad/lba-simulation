@@ -66,9 +66,9 @@ bool ServiceNode::enterNode(Job job) {
 
   // job can enter, so update stats
   if (isEnter) {
+    updateTotST(job.getServiceTime());  // increase the total ST
     ++numJobsProcessed;                 // this Job can be processed
     updateUtil(job.calcDeparture());    // update utilization
-    updateTotST(job.getServiceTime());  // increase the total ST
     // update the last Job's departure time
     lastDeparture = job.calcDeparture();
   }
