@@ -9,7 +9,13 @@
 #include "rngs.h"
 #include "rvgs.h"
 
-// Global variables
+// Type definition aliases
+typedef int node_idx;
+typedef std::function<node_idx(std::vector<ServiceNode>)> lba_func;
+typedef std::vector<ServiceNode> node_list;
+typedef int lba_alg;
+
+// GLOBAL VARIABLES
 const int DAY_SEC{24 * 60 * 60};   // seconds in a day
 const int NOON_TIME{DAY_SEC / 2};  // time of day for noon
 const int HOUR_SEC{DAY_SEC / 24};
@@ -18,10 +24,28 @@ const double END{(double)DAY_SEC * 30};  // end time for the simulation
 enum class Model { mqms, sqms };         // model enums
 const long int SEED{12345};              // seed for RNG
 
-// Type definition aliases
-typedef int node_idx;
-typedef std::function<node_idx(std::vector<ServiceNode>)> lba_alg;
-typedef std::vector<ServiceNode> node_list;
+// NOTE: surely there must be a better way to deal with the below
+const struct algs_t {
+  const lba_alg rr{0};
+  const lba_alg rand{1};
+  const lba_alg util{2};
+  const lba_alg cxns{3};
+} Algs;
+// this is a list that should be able to be indexed using the enumerator
+const std::vector<lba_func> LBA_FUNCTIONS = {
+  lba::roundrobin,
+  lba::random,
+  lba::utilizationbased,
+  lba::leastconnections
+};
+const std::vector<std::string> LBA_NAMES = {
+  "roundrobin",
+  "random",
+  "utilbased",
+  "leastcxns"
+};
+// =========================== END GLOBAL VARIABLES ============================
+
 
 // tests a load balancing algorithm with 'nodes', 'num_iter' times
 void test_lba(std::function<int(std::vector<ServiceNode>)> lba,
@@ -35,8 +59,8 @@ void test_lba(std::function<int(std::vector<ServiceNode>)> lba,
 // Function declarations
 double getArrival();
 node_list buildNodeList(int nNodes, int qSz);
-node_idx dispatcher(node_list nodes, lba_alg lba);
-void log_sim(lba_alg lba, int nNodes, int qSize, int nJobs, node_list nodes);
+node_idx dispatcher(node_list nodes, lba_func lba);
+void log_sim(lba_func lba, int nNodes, int qSize, int nJobs, node_list nodes);
 
 /* TO-DO:
  * Implement the function declartions below this list....
@@ -46,10 +70,12 @@ void mqmsSimulation(int nNodes, lba_alg lba, int qSz, int nJobs);
 void accumStats(node_list nodes, int nJobs, Model modelName,
                 std::string funcName);
 void serverDistribution(int nNodes, int nJobs);
+void log_sim(std::string alg, int nNodes, int qSize, int nJobs,
+             node_list nodes);
 
 int main() {
   std::cout << "Running load-balancing simulation." << std::endl;
-  PutSeed(SEED); // seed the RNG
+  PutSeed(SEED);  // seed the RNG
   serverDistribution(100, 10000);
   // std::vector<ServiceNode> nodes = {};
   // for (int ii = 0; ii < 10; ii++) {
@@ -72,13 +98,13 @@ int main() {
   int nJobs{50000};
 
   // testing sqms simulation
-  mqmsSimulation(nNodes, lba::roundrobin, qSize, nJobs);
+  // mqmsSimulation(nNodes, lba::roundrobin, qSize, nJobs);
 
   // test the another simulation
-  nNodes = 10;
-  qSize = 10;
-  nJobs = 100000;
-  mqmsSimulation(nNodes, lba::roundrobin, qSize, nJobs);
+  nNodes = 100;
+  qSize = 3;
+  nJobs = 1000000;
+  mqmsSimulation(nNodes, Algs.rand, qSize, nJobs);
 }
 
 // get a service time for a job
@@ -118,7 +144,7 @@ node_list buildNodeList(int nNodes, int qSz) {
  * @param lba The load-balancing algorithm to use to choose a node
  * @return int The index of the node to send a job to
  */
-int dispatcher(node_list nodes, lba_alg lba) {
+int dispatcher(node_list nodes, lba_func lba) {
   int nodeIdx{-1};       // -1 as no node will have this index
   nodeIdx = lba(nodes);  // pick a node using the LBA
 
@@ -165,6 +191,10 @@ void log_sim(std::string alg, int nNodes, int qSize, int nJobs,
  * @param nJobs The number of jobs to "process" in the simulation
  */
 void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
+  // select the algorithm besing used
+  lba_func alg{LBA_FUNCTIONS[lba]};
+  std::string funcName{LBA_NAMES[lba]};
+  
   // build node list
   node_list nodes{buildNodeList(nNodes, qSize)};
 
@@ -174,17 +204,17 @@ void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
     Job job{getArrival()};
 
     // determine receiving server based on lba
-    int receiver{dispatcher(nodes, lba)};
-    std::cout << "Node " << receiver << " selected for job" << std::endl;
+    int receiver{dispatcher(nodes, alg)};
+    // std::cout << "Node " << receiver << " selected for job" << std::endl;
 
     // attempt to enter the job into the node
     if (nodes[receiver].enterNode(job)) {
       // node added successfully
-      std::cout << "Job successfully added" << std::endl;
+      // std::cout << "Job successfully added" << std::endl;
     } else {
       // node unable to be added, this is where different rejection
       // techiniques could be used
-      std::cout << "Job unsuccessfully added" << std::endl;
+      // std::cout << "Job unsuccessfully added" << std::endl;
     }
   }
 
@@ -194,7 +224,10 @@ void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
               << "   Average Service Time: " << node.calcAvgSt() << std::endl;
   }
 
-  accumStats(nodes, nJobs, Model::mqms, "roundrobin");
+  // TODO: make this dependent on CLI flag
+  // also, need better way to get alg name
+  accumStats(nodes, nJobs, Model::mqms, funcName);
+  log_sim(funcName, nNodes, qSize, nJobs, nodes);
 }
 
 /**
@@ -208,12 +241,12 @@ void serverDistribution(int nNodes, int nJobs) {
   node_list nodes{buildNodeList(nNodes, 0)};  // queue size doesn't matter
 
   // list of available load-balancing algorithms
-  std::vector<lba_alg> funcs = {lba::roundrobin, lba::random,
+  std::vector<lba_func> funcs = {lba::roundrobin, lba::random,
                                 lba::utilizationbased, lba::leastconnections};
 
   std::ofstream lba_dat("lba-data.csv");
 
-  for (lba_alg alg : funcs) {
+  for (lba_func alg : funcs) {
     for (int i = 0; i < nJobs - 1; i++) {
       lba_dat << alg(nodes) << ",";
     }
