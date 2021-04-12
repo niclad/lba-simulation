@@ -1,12 +1,12 @@
 #include "Job.h"
 #include "rvgs.h"
 
-Job::Job(double arrival) : arrival{arrival}, service{getService()}, delay{0} {
+Job::Job(double arrival) : arrival{arrival}, delay{0}, service{getService()} {
   // service needs to be generated via GetService
 }
 
 Job::Job(double arrival, double prevDeparture)
-    : arrival{arrival}, service{getService()}, delay{setDelay(prevDeparture)} {
+    : arrival{arrival}, delay{setDelay(prevDeparture)}, service{getService()} {
   // service needs to be generated via GetService
 }
 
