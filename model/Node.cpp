@@ -66,9 +66,9 @@ bool ServiceNode::enterNode(Job job) {
 
   // job can enter, so update stats
   if (isEnter) {
+    ++numJobsProcessed;                 // this Job can be processed
     updateUtil(job.calcDeparture());    // update utilization
     updateTotST(job.getServiceTime());  // increase the total ST
-    ++numJobsProcessed;                 // this Job can be processed
     // update the last Job's departure time
     lastDeparture = job.calcDeparture();
   }
@@ -145,7 +145,10 @@ int ServiceNode::getNumProcJobs() const { return numJobsProcessed; }
 double ServiceNode::getAvgSt() const {return totST / numJobsProcessed; }
 
 std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
-  out << "ID: " << node.getId() << ", util: " << node.getUtil();
+  out << "ID: " << node.getId() 
+      << ", util: " << node.getUtil()
+      << ", njobs: " << node.getNumProcJobs()
+      << ", avg_s: " << node.getAvgSt();
 
   return out;
 }
