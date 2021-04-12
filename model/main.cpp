@@ -1,12 +1,12 @@
 #include <fstream>
 #include <functional>
-#include <fstream>
 #include <iostream>
 #include <vector>
 
 #include "Job.h"
 #include "LoadBalancing.h"
 #include "Node.h"
+#include "rngs.h"
 #include "rvgs.h"
 
 // Global variables
@@ -15,7 +15,8 @@ const int NOON_TIME{DAY_SEC / 2};  // time of day for noon
 const int HOUR_SEC{DAY_SEC / 24};
 const double START{0.0};                 // start time for the simulation
 const double END{(double)DAY_SEC * 30};  // end time for the simulation
-enum class Model { mqms, sqms };
+enum class Model { mqms, sqms };         // model enums
+const long int SEED{12345};              // seed for RNG
 
 // Type definition aliases
 typedef int node_idx;
@@ -47,6 +48,7 @@ void accumStats(node_list nodes, int nJobs, Model modelName,
 void serverDistribution(int nNodes, int nJobs);
 
 int main() {
+  PutSeed(SEED); // seed the RNG
   serverDistribution(100, 10000);
   // std::vector<ServiceNode> nodes = {};
   // for (int ii = 0; ii < 10; ii++) {
@@ -63,18 +65,22 @@ int main() {
   // // test with random LBA
   // std::cout << "+-------Random--------+" << std::endl;
   // test_lba(lba::random, nodes, 50);
-  
+
   int nNodes{3};
   int qSize{5};
   int nJobs{50000};
 
   // testing sqms simulation
   mqmsSimulation(nNodes, lba::roundrobin, qSize, nJobs);
+
+  // test the another simulation
+  nNodes = 10;
+  qSize = 10;
+  nJobs = 100000;
+  mqmsSimulation(nNodes, lba::roundrobin, qSize, nJobs);
 }
 
 // get a service time for a job
-// NOTE: This makes no sense
-//     EDIT: I think it makes sense now
 double getArrival() {
   static double prevArr{START};     // the previous arrival time
   double st{Uniform(0, HOUR_SEC)};  // choose an arrival time
@@ -120,7 +126,7 @@ int dispatcher(node_list nodes, lba_alg lba) {
 
 /**
  * @brief log information and utilization results of a simulation run
- * 
+ *
  *  Call at end of mqmsSimulation and sqmsSimulation
  *
  *
@@ -129,22 +135,23 @@ int dispatcher(node_list nodes, lba_alg lba) {
  * @param qSize The number of jobs allowed in each server's queue
  * @param nJobs The number of jobs to "process" in the simulation
  * @param nodes node_list of nodes to get node utilizations.
- * @return void Writes/ appends to a csv file to log info and utilization results
+ * @return void Writes/ appends to a csv file to log info and utilization
+ * results
  */
-void log_sim(std::string alg, int nNodes, int qSize, int nJobs, node_list nodes)
-{
-    // std::string alg{std::to_string(lba)};   // not sure if this will work, if not can just do if or case/switches to get name of alg
-    std:: ofstream logfile;
-    logfile.open("simlog.csv", std::ios::app);
-    logfile << alg <<","<< nJobs <<","<< nNodes <<","<< qSize;
-    for(int i=0; i<nNodes; i++)
-    {
-        logfile<<","<< nodes[i].getUtil();
-    }
-    logfile<<",\n";
-    logfile.close();
+void log_sim(std::string alg, int nNodes, int qSize, int nJobs,
+             node_list nodes) {
+  // not sure if this will work, if not can just do if or case/switches to get
+  // name of alg std::string alg{std::to_string(lba)};
+  std::ofstream logfile;
+  logfile.open("simlog.csv", std::ios::app);
+  logfile << alg << "," << nJobs << "," << nNodes << "," << qSize;
+  for (int i = 0; i < nNodes; i++) {
+    logfile << "," << nodes[i].getUtil();
+  }
+  logfile << ",\n";
+  logfile.close();
 }
-  
+
 /**
  * @brief Run a multi-queue, multi-server simulation
  *
@@ -157,12 +164,6 @@ void log_sim(std::string alg, int nNodes, int qSize, int nJobs, node_list nodes)
  * @param nJobs The number of jobs to "process" in the simulation
  */
 void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
-  /* TO-DO:
-   * Actually implement code.
-   * Generate nodes list
-   * Run simulation to n jobs
-   */
-
   // build node list
   node_list nodes{buildNodeList(nNodes, qSize)};
 
@@ -188,33 +189,31 @@ void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
 
   // get simulation results
   for (auto node : nodes) {
-    std::cout << "Utilization: " << node.getUtil() << "   Average Service Time: " 
-      << node.calcAvgSt() << std::endl;
+    std::cout << "Utilization: " << node.getUtil()
+              << "   Average Service Time: " << node.calcAvgSt() << std::endl;
   }
+
+  accumStats(nodes, nJobs, Model::mqms, "roundrobin");
 }
 
 /**
  * @brief Find the distribution of servers for a load-balancing algorithm
- * 
+ *
  * @param nNodes The number of nodes for the alogrithm to choose from
  * @param nJobs The number of "jobs" to send to the nodes
  */
 void serverDistribution(int nNodes, int nJobs) {
   std::cout << "> Testing node choice distribution..." << std::endl;
-  node_list nodes{buildNodeList(nNodes, 0)}; // queue size doesn't matter
+  node_list nodes{buildNodeList(nNodes, 0)};  // queue size doesn't matter
 
   // list of available load-balancing algorithms
-  std::vector<lba_alg> funcs = {
-    lba::roundrobin, 
-    lba::random, 
-    lba::utilizationbased,
-    lba::leastconnections
-  };
+  std::vector<lba_alg> funcs = {lba::roundrobin, lba::random,
+                                lba::utilizationbased, lba::leastconnections};
 
   std::ofstream lba_dat("lba-data.csv");
 
   for (lba_alg alg : funcs) {
-    for (int i = 0; i < nJobs-1; i++) {
+    for (int i = 0; i < nJobs - 1; i++) {
       lba_dat << alg(nodes) << ",";
     }
     lba_dat << alg(nodes) << std::endl;
@@ -225,7 +224,8 @@ void serverDistribution(int nNodes, int nJobs) {
   std::cout << "> ... done" << std::endl;
 }
 
-void accumStats(node_list nodes, int nJobs, Model modelName, std::string funcName) {
+void accumStats(node_list nodes, int nJobs, Model modelName,
+                std::string funcName) {
   std::string model = (modelName == Model::mqms) ? "mqms" : "sqms";
   std::ofstream data(model + funcName + ".csv");
 
@@ -235,9 +235,7 @@ void accumStats(node_list nodes, int nJobs, Model modelName, std::string funcNam
   // will need to get n_jobs
   int nodeId{0};
   for (ServiceNode node : nodes) {
-    data << nodeId++ << ","
-         << node.getUtil() << ","
-         << node.getAvgSt() << ","
+    data << nodeId++ << "," << node.getUtil() << "," << node.getAvgSt() << ","
          << node.getNumProcJobs() << std::endl;
   }
 
