@@ -48,13 +48,24 @@ The files in this repo are outlined below
    2. [LoadBalancing.cpp](./model/LoadBalancing.cpp) and [LoadBalancing.h](./model/LoadBalancing.h) - all the load-balancing algorithms can be implemented here.
    3. [Makefile](./model/Makefile) - this will compile the code into a temporary test program.
    4. [Node.cpp](./model/Node.cpp) and [Node.h](./model/Node.h) - this represents a service node in the model.
-   5. [temp.cpp](./model/temp.cpp) - a temporary code file to test imports and compilation.
+   5. [main.cpp](./model/main.cpp) - this runs the all the top-level simulation control.
+   6. rng(s)/rvgs/rvms - These files are from the class c_lib and perform all RNG needed for the program.
 3. [util](./util) (See [Scripts](#scripts).)
      1. [json-data-parser.py](./util/json-data-parser.py) - this parses a JSON file with multiple JSON entries, formatting data.
-     2. [read-discovery-data.py](./util/read-discovery-data.py) - this converts the discovery data to a useable format.
+     2. [plot-dist.py](./util/plot-dist.py) - This will plot the data specifically output by `serverDistribution()` in [main.cpp](./model/main.cpp).
+     3. [read-discovery-data.py](./util/read-discovery-data.py) - this converts the discovery data to a useable format.
 
 
 ## Additional Info 
+
+### Searching files:
+
+There are special places listed throughout the files with specific notes. Usually in ALL CAPS, these notes will tpyically provide extra information about details of the function pertaining to its (future) design. Below is a key/legend of these notes.
+
+| Value | Meaning |
+|-|-|
+| `NOTE` | This is just something to keep in mind when dealing with the code around this point. Typically may describe errors or future changes if a spec of the implementation changes |
+| `TODO` | Something needs to be implemented here. Details of what to do will follow. |
 
 ### Unzipping `.bz2`
 
