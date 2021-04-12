@@ -103,7 +103,7 @@ int main() {
   // test the another simulation
   nNodes = 100;
   qSize = 3;
-  nJobs = 1000000;
+  nJobs = 100000000;
   mqmsSimulation(nNodes, Algs.rand, qSize, nJobs);
 }
 
