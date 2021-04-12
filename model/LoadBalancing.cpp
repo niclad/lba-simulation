@@ -39,7 +39,7 @@ int lba::leastconnections(std::vector<ServiceNode> nodeList) {
 
     // find the index with the least number of jobs
     for (size_t ii = 1; ii < nodeList.size(); ii++) {
-        if (nodeList[least_connections].getQueueLength() <
+        if (nodeList[least_connections].getQueueLength() >
                 nodeList[ii].getQueueLength()) {
             least_connections = ii;
         }
