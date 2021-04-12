@@ -24,13 +24,19 @@ rng.o: rng.c rng.h
 	$(CXX) $(CXFLAGS) -c $*.c
 
 rngs.o: rngs.c rngs.h 
-	$(CC) $(CCFLAGS) -c $*.c
+	$(CXX) $(CXFLAGS) -c $*.c
 
 rvgs.o: rvgs.c rvgs.h rngs.h
-	$(CC) $(CCFLAGS) -c $*.c
+	$(CXX) $(CXFLAGS) -c $*.c
 
 rvms.o: rvms.c rvms.h
 	$(CXX) $(CXFLAGS) -c $*.c
+
+main:
+	make clean && make main.out
+
+run:
+	make main && ./main.out
 
 clean:
 	rm -rf *.o *.a *.out
