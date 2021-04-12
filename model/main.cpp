@@ -48,6 +48,7 @@ void accumStats(node_list nodes, int nJobs, Model modelName,
 void serverDistribution(int nNodes, int nJobs);
 
 int main() {
+  std::cout << "Running load-balancing simulation." << std::endl;
   PutSeed(SEED); // seed the RNG
   serverDistribution(100, 10000);
   // std::vector<ServiceNode> nodes = {};
@@ -227,7 +228,7 @@ void serverDistribution(int nNodes, int nJobs) {
 void accumStats(node_list nodes, int nJobs, Model modelName,
                 std::string funcName) {
   std::string model = (modelName == Model::mqms) ? "mqms" : "sqms";
-  std::ofstream data(model + funcName + ".csv");
+  std::ofstream data(model + "_" + funcName + ".csv");
 
   // write the headers
   data << "sid,avg_x,avg_s,n_jobs" << std::endl;
