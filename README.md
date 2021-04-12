@@ -11,6 +11,8 @@ Created by Hannah Khafif, Tyler Royere, Fizzah Shaikh, & Nicolas Tedori
 4. [Model](#model)
 5. [Scripts](#scripts)
 2. [Files](#files)
+7. [Compiling](#compiling)
+8. [Running](#running)
 6. [Additional Info](#additional-info)
 
 ### Background
@@ -55,6 +57,26 @@ The files in this repo are outlined below
      2. [plot-dist.py](./util/plot-dist.py) - This will plot the data specifically output by `serverDistribution()` in [main.cpp](./model/main.cpp).
      3. [read-discovery-data.py](./util/read-discovery-data.py) - this converts the discovery data to a useable format.
 
+## Compiling
+
+Compiling this code is done with the [Makefile](./model/Makefile). Running `make` will compile an executable `make.out` which can be run (see [Running](#running)). There is likely to be linker errors if the previous compilation object files aren't removed first. This can be done with `make clean` and then running `make` or `make main.out`.
+
+Because of the above, running `make main` will run `make clean && make main.out`, completing both processes at once.
+
+Additionally, `make run` will compile and run the program. However, so command-line input is provided, so this will not run. See [Running](#running) for more information.
+
+## Running
+
+Running this code can be done two ways: (1) running `make run` which will compile and run the code<sup>1</sup> or (2) executing `./main.out <nNodes> <lba_alg> <qSize> <nJobs>` once the compilation is complete. Input to the program via command-line is required. This inputs are outlined below.
+
+| Argument | Values |
+|-|-|
+| `nNodes` | This is the number of nodes to be used in the simulation. This must be provided as an integer. Any reasonable number greater than 0 will run a simulation with 1 or more nodes (provided the other arguments are provided with reasonable values as well). |
+| `lba_alg` | This is the algorithm used in the dispatcher in the simulation. This can be one of "rand", "round", "util", or "least", verbatim. Anything else will cause and error. |
+| `qSize` | The size of the queue for the nodes. This only matters for an MQMS simulation. This must be an integer, and any value in the range [0, `INT_MAX`], provided your system has the memory for `INT_MAX` Jobs. |  
+| `nJobs` | This is the total number of jobs to use in the simulation. This should also be an integer greater than 0. |
+
+<sup>1</sup>This won't run as the command in the Makefile does not currently provide CLI to the program.
 
 ## Additional Info 
 

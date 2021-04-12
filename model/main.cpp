@@ -24,6 +24,7 @@ const double START{0.0};                 // start time for the simulation
 const double END{(double)DAY_SEC * 30};  // end time for the simulation
 enum class Model { mqms, sqms };         // model enums
 const long int SEED{12345};              // seed for RNG
+std::string alg{""};
 
 // NOTE: surely there must be a better way to deal with the below
 const struct algs_t {
@@ -89,8 +90,9 @@ int main(int argc, char* argv[]) {
     return 1;
   }
   int nNodes{atoi(argv[1])};
-  lba_alg lba{name_to_index(argv[2])};
-  if (lba < 0 || lba > (int)LBA_FUNCTIONS.size()) {
+
+  lba_alg lbaChoice{name_to_index(argv[2])};
+  if (lbaChoice < 0 || lbaChoice > (int)LBA_FUNCTIONS.size()) {
     std::cerr << "Invalid load balancing algorithm: " 
             << argv[2] << std::endl;
     std::cerr << "Possible choices are: ";
@@ -105,8 +107,10 @@ int main(int argc, char* argv[]) {
       << argv[2] << " Algorithm, "
       << qSize << " Queue length, "
       << nJobs << " Jobs." << std::endl;
+  
   PutSeed(SEED);  // seed the RNG
-  serverDistribution(100, 10000);
+
+  //serverDistribution(100, 10000);
   // std::vector<ServiceNode> nodes = {};
   // for (int ii = 0; ii < 10; ii++) {
   //   nodes.push_back(ServiceNode(ii));
@@ -124,13 +128,13 @@ int main(int argc, char* argv[]) {
   // test_lba(lba::random, nodes, 50);
 
   // testing sqms simulation
-  mqmsSimulation(nNodes, lba, qSize, nJobs);
+  mqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
 
   // test the another simulation
   nNodes = 3;
   qSize = 3;
   nJobs = 100;
-  mqmsSimulation(nNodes, Algs.util, qSize, nJobs);
+  mqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
 }
 
 // get a service time for a job

@@ -73,4 +73,3 @@ int lba::testLBA(std::vector<ServiceNode> nodeList, double currT) {
 
   return -1;
 }
-
