@@ -131,9 +131,9 @@ int dispatcher(node_list nodes, lba_alg lba) {
  * @param nodes node_list of nodes to get node utilizations.
  * @return void Writes/ appends to a csv file to log info and utilization results
  */
-void log_sim(lba_alg lba, int nNodes, int qSize, int nJobs, node_list nodes)
+void log_sim(std::string alg, int nNodes, int qSize, int nJobs, node_list nodes)
 {
-    std::string alg= std::to_string(lba);   // not sure if this will work, if not can just do if or case/switches to get name of alg
+    // std::string alg{std::to_string(lba)};   // not sure if this will work, if not can just do if or case/switches to get name of alg
     std:: ofstream logfile;
     logfile.open("simlog.csv", std::ios::app);
     logfile << alg <<","<< nJobs <<","<< nNodes <<","<< qSize;
@@ -144,9 +144,6 @@ void log_sim(lba_alg lba, int nNodes, int qSize, int nJobs, node_list nodes)
     logfile<<",\n";
     logfile.close();
 }
-
-  
-  
   
 /**
  * @brief Run a multi-queue, multi-server simulation
