@@ -213,6 +213,39 @@ void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
     std::cout << "Utilization: " << node.getUtil() << "   Average Service Time: " 
       << node.calcAvgSt() << std::endl;
   }
+  log_sim(alg, nNodes, qSize, nJobs, nodes);
+}
+
+/**
+ * @brief Run a multi-queue, multi-server simulation
+ *
+ * The simulation will generate it's own list of nodes and use the LBA to send
+ * nJobs to the nodes in the model.
+ *
+ * @param nNodes The number of nodes to use in the simulation
+ * @param lba The node balancing
+ * @param nJobs The number of jobs to "process" in the simulation
+ */
+void sqmsSimulation(int nNodes, lba_alg lba, int nJobs) {
+  /* TO-DO:
+   * Actually implement code.
+   * Generate nodes list
+   * Run simulation to n jobs
+   */
+
+  // build node list
+  node_list nodes{buildNodeList(nNodes, 0)};
+
+  // run for the number of jobs
+  for (int ii = 0; ii < nJobs; ii++) {
+    
+  }
+
+  // get simulation results
+  for (auto node : nodes) {
+    std::cout << "Utilization: " << node.getUtil() << "   Average Service Time: " 
+      << node.calcAvgSt() << std::endl;
+  }
 }
 
 
