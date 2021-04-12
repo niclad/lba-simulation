@@ -59,22 +59,22 @@ int lba::testLBA(std::vector<ServiceNode> nodeList) {
   return -1;
 }
 
-std::function<int(std::vector<ServiceNode>)>
+int
 lba::getLba(std::string name)
 {
     if (name == "rand") {
-        return lba::random;
+        return 1;
     }
     else if (name == "util") {
-        return lba::utilizationbased;
+        return 2;
     }
     else if (name == "least") {
-        return lba::leastconnections;
+        return 3;
     }
     else if (name == "round") {
-        return lba::roundrobin;
+        return 0;
     }
     else {
-        return nullptr;
+        return -1;
     }
 }

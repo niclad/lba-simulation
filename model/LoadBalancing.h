@@ -53,7 +53,7 @@ int b(std::vector<ServiceNode> nodeList);
 int c(std::vector<ServiceNode> nodeList);
 
 // converts specifer string to lba
-std::function<int(std::vector<ServiceNode>)> getLba(std::string name);
+int getLba(std::string name);
 }  // namespace lba
 
 
