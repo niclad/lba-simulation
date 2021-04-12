@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-int lba::roundrobin(std::vector<ServiceNode> nodeList) { 
+int lba::roundrobin(std::vector<ServiceNode> nodeList, double _ct) { 
     // static counter of jobs
     static int index{0};
 
@@ -16,16 +16,28 @@ int lba::roundrobin(std::vector<ServiceNode> nodeList) {
     return server;
 }
 
-int lba::random(std::vector<ServiceNode> nodeList) {
+int lba::random(std::vector<ServiceNode> nodeList, double _ct) {
     // return a random server index
     return Equilikely(0, nodeList.size()-1);
 }
 
-int lba::utilizationbased(std::vector<ServiceNode> nodeList) {
+/**
+ * These two algorithms have an issue
+ * These algorithms assume that reading the queue length or 
+ * Utilization retrieves the Nodes "current" status
+ * but since it is possible for jobs to have not entered these
+ * nodes for a long time, (maybe they are already full) they 
+ * don'd update their utilization or queue length so they might
+ * never be picked again
+ */
+
+int lba::utilizationbased(std::vector<ServiceNode> nodeList, double currT) {
     int least_utilized{0};
 
     // find the index with the least utilization
     for (size_t ii = 0; ii < nodeList.size(); ii++) {
+        nodeList[ii].processQueue(currT);
+        nodeList[ii].updateUtil(currT);
         if (nodeList[least_utilized].getUtil() >
                 nodeList[ii].getUtil()) {
             least_utilized = ii;
@@ -34,21 +46,24 @@ int lba::utilizationbased(std::vector<ServiceNode> nodeList) {
     return least_utilized;
 } 
 
-int lba::leastconnections(std::vector<ServiceNode> nodeList) {
+int lba::leastconnections(std::vector<ServiceNode> nodeList, double currT) {
     int least_connections{0};
 
     // find the index with the least number of jobs
-    for (size_t ii = 1; ii < nodeList.size(); ii++) {
+    for (size_t ii = 0; ii < nodeList.size(); ii++) {
+        nodeList[ii].processQueue(currT);
+        std::cout << nodeList[ii].getQueueLength() << " ";
         if (nodeList[least_connections].getQueueLength() >
                 nodeList[ii].getQueueLength()) {
             least_connections = ii;
         }
     }
+    std::cout << nodeList[least_connections].getQueueLength() << std::endl;
 
     return least_connections;
 }
 
-int lba::testLBA(std::vector<ServiceNode> nodeList) {
+int lba::testLBA(std::vector<ServiceNode> nodeList, double currT) {
   if (nodeList.size() > 0) {
     for (ServiceNode node : nodeList) {
       std::cout << node << std::endl;
@@ -59,22 +74,3 @@ int lba::testLBA(std::vector<ServiceNode> nodeList) {
   return -1;
 }
 
-std::function<int(std::vector<ServiceNode>)>
-lba::getLba(std::string name)
-{
-    if (name == "rand") {
-        return lba::random;
-    }
-    else if (name == "util") {
-        return lba::utilizationbased;
-    }
-    else if (name == "least") {
-        return lba::leastconnections;
-    }
-    else if (name == "round") {
-        return lba::roundrobin;
-    }
-    else {
-        return nullptr;
-    }
-}
