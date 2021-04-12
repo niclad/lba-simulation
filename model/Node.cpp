@@ -145,7 +145,10 @@ int ServiceNode::getNumProcJobs() const { return numJobsProcessed; }
 double ServiceNode::getAvgSt() const {return totST / numJobsProcessed; }
 
 std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
-  out << "ID: " << node.getId() << ", util: " << node.getUtil();
+  out << "ID: " << node.getId() 
+      << ", util: " << node.getUtil()
+      << ", njobs: " << node.getNumProcJobs()
+      << ", avg_s: " << node.getAvgSt();
 
   return out;
 }

@@ -15,3 +15,5 @@ test/TEST.txt
 test/test.json
 model/lba-data.csv
 util/algsdist.png
+model/*.csv
+util/*.png
