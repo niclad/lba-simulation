@@ -36,8 +36,15 @@ int lba::utilizationbased(std::vector<ServiceNode> nodeList, double currT) {
 
     // find the index with the least utilization
     for (size_t ii = 0; ii < nodeList.size(); ii++) {
+        // process queue 
         nodeList[ii].processQueue(currT);
-        nodeList[ii].updateUtil(currT);
+
+        // update utilization if applicable
+        if (nodeList[ii].getNumProcJobs() > 0) {
+          nodeList[ii].updateUtil(currT);
+        }
+
+        // check if this is less utilized
         if (nodeList[least_utilized].getUtil() >
                 nodeList[ii].getUtil()) {
             least_utilized = ii;
