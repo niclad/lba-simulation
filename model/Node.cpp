@@ -24,10 +24,7 @@ void ServiceNode::updateUtil(double mostRecentDep) {
 
 bool ServiceNode::enterQueue(Job& job) {
   if (jobQueue.size() < maxQueueSz) {
-    if (!jobQueue.empty()) {
-      job.setDelay(jobQueue.back().calcDeparture());
-    }
-
+    job.setDelay(lastDeparture);
     jobQueue.push(job);
 
     // process the existing queue now that a new arrival has come
@@ -49,7 +46,7 @@ bool ServiceNode::enterNode(Job job) {
 
   bool isEnter{false};
 
-  if (job.getArrival() < lastDeparture) {
+  if (job.getArrival() < serviceDeparture) {
     // the server is busy and there's no queue, so job can't wait here
     if (maxQueueSz == 0) {
       return isEnter;
@@ -63,7 +60,6 @@ bool ServiceNode::enterNode(Job job) {
   // bitwise OR to ensure that both cases are covered
   // (w/ and w/o queueueus)
   isEnter |= (jobQueue.size() == 0);
-
   // job can enter, so update stats
   if (isEnter) {
     ++numJobsProcessed;                 // this Job can be processed
@@ -71,6 +67,11 @@ bool ServiceNode::enterNode(Job job) {
     updateUtil(job.calcDeparture());    // update utilization
     // update the last Job's departure time
     lastDeparture = job.calcDeparture();
+
+    // if the queue is empty, this job will depart first
+    if (jobQueue.size() == 0) {
+      serviceDeparture = job.calcDeparture();
+    }
   }
 
   // return the result of this expression
@@ -99,7 +100,7 @@ void ServiceNode::processQueue(double currArrival) {
     // get the most recent arrival time (back of queue)
     // double currentTime{jobQueue.back().getArrival()};
     // if the job in the server is still being processed
-    if (currArrival > lastDeparture) {
+    if (currArrival > serviceDeparture) {
       while (!jobQueue.empty()) {
         // if front of queue has already departed
         if (jobQueue.front().calcDeparture() < currArrival) {
@@ -114,6 +115,7 @@ void ServiceNode::processQueue(double currArrival) {
       // update job in servers departure time
       if (!jobQueue.empty()) {
         // first job in what's left is being processed in server
+        serviceDeparture = jobQueue.front().calcDeparture();
         jobQueue.pop();
       }
     }

@@ -163,6 +163,9 @@ class ServiceNode {
   // The departure time of the last job to enter the server part of this
   // ServiceNode;
   double lastDeparture;
+
+  // departure time of the job being serviced
+  double serviceDeparture;
 };
 
 // overload the << operator

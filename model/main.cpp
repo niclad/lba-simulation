@@ -134,7 +134,7 @@ int main(int argc, char* argv[]) {
   nNodes = 3;
   qSize = 3;
   nJobs = 100;
-  mqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
+  //mqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
 }
 
 // get a service time for a job
