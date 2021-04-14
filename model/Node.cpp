@@ -124,7 +124,13 @@ double ServiceNode::updateTotST(double lastST) {
 
 int ServiceNode::getNumProcJobs() const { return numJobsProcessed; }
 
-double ServiceNode::calcAvgQueue() const { return totDelay / lastDeparture; }
+double ServiceNode::calcAvgQueue() const {
+  double avgQ{0};
+  if (numJobsProcessed > 0) {
+    avgQ = totDelay / lastDeparture;
+  }
+  return avgQ;
+}
 
 std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
   out << "ID: " << node.getId() << ", util: " << node.getUtil()
