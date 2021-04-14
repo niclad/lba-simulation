@@ -84,22 +84,6 @@ bool ServiceNode::enterNode(Job job) {
 
 void ServiceNode::processQueue(double currArrival) {
   if (jobQueue.size() > 0) {
-    // 1. pop first element
-    // 2. calculate the service begin time
-    //    A. if begin time <= lastDeparture
-    //       I. update the lastDeparture
-    //      II.
-    // PROBLEM: need to figure out how the simulation will run
-    // cant pop an element and put it back. Also won't run in real-time.
-    // This means, that the queue might not be empty when a job is trying to be
-    // added to the ServiceNode.
-
-    // check the most recent arrival time. if it's less than the running job's
-    // departure time, then update and process the server until a departure >
-    // arrival is found.
-
-    // process queue
-
     // get the most recent arrival time (back of queue)
     // double currentTime{jobQueue.back().getArrival()};
     // if the job in the server is still being processed
