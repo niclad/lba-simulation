@@ -62,8 +62,8 @@ int lba::leastconnections(std::vector<ServiceNode> nodeList, double currT) {
 
         // use the average queue lengths of nodes to determine best node
         // for a job
-        if (nodeList[least_connections].calcAvgDelay() >
-                nodeList[ii].calcAvgDelay()) {
+        if (nodeList[least_connections].calcAvgQueue() >
+                nodeList[ii].calcAvgQueue()) {
             least_connections = ii;
         }
     }
