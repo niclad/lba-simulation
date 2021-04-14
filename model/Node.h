@@ -126,6 +126,17 @@ class ServiceNode {
    */
   double calcAvgSt();
 
+  /**
+   * @brief Calculate the average queue length for the Service Node
+   * 
+   * This uses the following equation: \Bar{q}=(n/c_n)*\Bar{d}
+   * This can be simplified to: \Bar{q}=(\Sum{di}/c_n)
+   * 
+   * @param mostRecentDep The departure time of the most recent job
+   * @return double The average queue length
+   */
+  double calcAvgDelay(double mostRecentDep);
+
  private:
   /**
    * @brief Calculate the average service time
@@ -166,6 +177,9 @@ class ServiceNode {
 
   // departure time of the job being serviced
   double serviceDeparture;
+
+  // the total delay for all the jobs processed
+  double totDelay;
 };
 
 // overload the << operator

@@ -8,7 +8,8 @@ ServiceNode::ServiceNode(int id)
       maxQueueSz{0},
       totST{0},
       numJobsProcessed{0},
-      lastDeparture{0.0} {}
+      lastDeparture{0.0},
+      totDelay{0.0} {}
 
 ServiceNode::ServiceNode(int id, size_t maxQueueSz)
     : id{id},
@@ -16,7 +17,8 @@ ServiceNode::ServiceNode(int id, size_t maxQueueSz)
       maxQueueSz{maxQueueSz},
       totST{0},
       numJobsProcessed{0},
-      lastDeparture{0.0} {}
+      lastDeparture{0.0},
+      totDelay{0.0} {}
 
 void ServiceNode::updateUtil(double mostRecentDep) {
   util = ((double)numJobsProcessed / mostRecentDep) * calcAvgSt();
@@ -65,6 +67,7 @@ bool ServiceNode::enterNode(Job job) {
     ++numJobsProcessed;                 // this Job can be processed
     updateTotST(job.getServiceTime());  // increase the total ST
     updateUtil(job.calcDeparture());    // update utilization
+    totDelay += job.getDelay();         // update the delay.
     // update the last Job's departure time
     lastDeparture = job.calcDeparture();
 
@@ -128,9 +131,7 @@ double ServiceNode::getUtil() const { return util; }
 
 int ServiceNode::getQueueLength() const { return jobQueue.size(); }
 
-double ServiceNode::calcAvgSt() {
-  return totST / numJobsProcessed;
-}
+double ServiceNode::calcAvgSt() { return totST / numJobsProcessed; }
 
 double ServiceNode::updateTotST(double lastST) {
   totST = totST + lastST;
@@ -139,13 +140,15 @@ double ServiceNode::updateTotST(double lastST) {
 
 int ServiceNode::getNumProcJobs() const { return numJobsProcessed; }
 
-double ServiceNode::getAvgSt() const {return totST / numJobsProcessed; }
+double ServiceNode::getAvgSt() const { return totST / numJobsProcessed; }
 
 std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
-  out << "ID: " << node.getId() 
-      << ", util: " << node.getUtil()
-      << ", njobs: " << node.getNumProcJobs()
-      << ", avg_s: " << node.getAvgSt();
+  out << "ID: " << node.getId() << ", util: " << node.getUtil()
+      << ", njobs: " << node.getNumProcJobs() << ", avg_s: " << node.getAvgSt();
 
   return out;
+}
+
+double ServiceNode::calcAvgDelay(double mostRecentDep) {
+  return totDelay / mostRecentDep;
 }
