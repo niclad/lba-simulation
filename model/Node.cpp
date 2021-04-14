@@ -131,7 +131,7 @@ double ServiceNode::getUtil() const { return util; }
 
 int ServiceNode::getQueueLength() const { return jobQueue.size(); }
 
-double ServiceNode::calcAvgSt() { return totST / numJobsProcessed; }
+double ServiceNode::calcAvgSt() const { return totST / numJobsProcessed; }
 
 double ServiceNode::updateTotST(double lastST) {
   totST = totST + lastST;
@@ -140,15 +140,12 @@ double ServiceNode::updateTotST(double lastST) {
 
 int ServiceNode::getNumProcJobs() const { return numJobsProcessed; }
 
-double ServiceNode::getAvgSt() const { return totST / numJobsProcessed; }
+double ServiceNode::calcAvgQueue() const { return totDelay / lastDeparture; }
 
 std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
   out << "ID: " << node.getId() << ", util: " << node.getUtil()
-      << ", njobs: " << node.getNumProcJobs() << ", avg_s: " << node.getAvgSt();
+      << ", njobs: " << node.getNumProcJobs() << ", avg_s: " << node.calcAvgSt()
+      << ", avg_q: " << node.calcAvgQueue();
 
   return out;
-}
-
-double ServiceNode::calcAvgDelay() {
-  return totDelay / lastDeparture;
 }

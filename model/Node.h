@@ -108,13 +108,6 @@ class ServiceNode {
    * @return int The number of jobs processed
    */
   int getNumProcJobs() const;
-
-  /**
-   * @brief Calculate and get the average service time
-   * 
-   * @return double The average service time
-   */
-  double getAvgSt() const;
   
   /**
    * @brief Calculate the average service time.
@@ -124,7 +117,7 @@ class ServiceNode {
    * 
    * @return double 
    */
-  double calcAvgSt();
+  double calcAvgSt() const;
 
   /**
    * @brief Calculate the average queue length for the Service Node
@@ -136,7 +129,7 @@ class ServiceNode {
    * 
    * @return double The average queue length
    */
-  double calcAvgDelay();
+  double calcAvgQueue() const;
 
  private:
   /**
@@ -167,7 +160,7 @@ class ServiceNode {
   size_t maxQueueSz;
 
   // The running average of the service time
-  double totST; 
+  mutable double totST; 
 
   // The total number of jobs processed over the life time of this ServiceNode
   int numJobsProcessed;
@@ -180,7 +173,7 @@ class ServiceNode {
   double serviceDeparture;
 
   // the total delay for all the jobs processed
-  double totDelay;
+  mutable double totDelay;
 };
 
 // overload the << operator
