@@ -1,11 +1,3 @@
-# static file names to ignore
-anon_jobs_2020-08.json
-data/discovery-data_u.csv
-.vscode/settings.json
-test/test.txt
-test/TEST.txt
-test/test.json
-
 # ignore virtual environments
 data-env/
 data/feb2nov_deidf.pkl
@@ -13,3 +5,15 @@ data/feb2nov_deidf.pkl
 # CPP files
 *.o
 *.out
+
+# static file names to ignore
+anon_jobs_2020-08.json
+data/discovery-data_u.csv
+.vscode/settings.json
+test/test.txt
+test/TEST.txt
+test/test.json
+model/lba-data.csv
+util/algsdist.png
+model/*.csv
+util/*.png

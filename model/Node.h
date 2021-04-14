@@ -55,7 +55,7 @@ class ServiceNode {
    * @return true The job was successfully added to the queue
    * @return false The queue is full and the job could not be added to the queue
    */
-  bool enterQueue(Job job);
+  bool enterQueue(Job& job);
 
   /**
    * @brief Determine if a job can enter this ServiceNode.
@@ -103,6 +103,20 @@ class ServiceNode {
   void processQueue(double currArrival);
 
   /**
+   * @brief Get the number of jobs processed by this node.
+   * 
+   * @return int The number of jobs processed
+   */
+  int getNumProcJobs() const;
+
+  /**
+   * @brief Calculate and get the average service time
+   * 
+   * @return double The average service time
+   */
+  double getAvgSt() const;
+  
+  /**
    * @brief Calculate the average service time.
    * 
    * Calculate the average service time for this node at the "point in time" for
@@ -149,6 +163,9 @@ class ServiceNode {
   // The departure time of the last job to enter the server part of this
   // ServiceNode;
   double lastDeparture;
+
+  // departure time of the job being serviced
+  double serviceDeparture;
 };
 
 // overload the << operator

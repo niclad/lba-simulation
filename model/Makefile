@@ -1,7 +1,7 @@
 CXX = g++
 CC = gcc
-CXFLAGS = -Wall -std=c++14
-CCFLAGS = -Wall -std=c99
+CXFLAGS = -Wall -std=c++14 -g
+CCFLAGS = -Wall -std=c99 -g
 
 default: main.out
 
@@ -24,13 +24,19 @@ rng.o: rng.c rng.h
 	$(CXX) $(CXFLAGS) -c $*.c
 
 rngs.o: rngs.c rngs.h 
-	$(CC) $(CCFLAGS) -c $*.c
+	$(CXX) $(CXFLAGS) -c $*.c
 
 rvgs.o: rvgs.c rvgs.h rngs.h
-	$(CC) $(CCFLAGS) -c $*.c
+	$(CXX) $(CXFLAGS) -c $*.c
 
 rvms.o: rvms.c rvms.h
 	$(CXX) $(CXFLAGS) -c $*.c
+
+main:
+	make clean && make main.out
+
+run:
+	make main && ./main.out
 
 clean:
 	rm -rf *.o *.a *.out
