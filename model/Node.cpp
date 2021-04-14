@@ -8,7 +8,8 @@ ServiceNode::ServiceNode(int id)
       maxQueueSz{0},
       totST{0},
       numJobsProcessed{0},
-      lastDeparture{0.0} {}
+      lastDeparture{0.0},
+      totDelay{0.0} {}
 
 ServiceNode::ServiceNode(int id, size_t maxQueueSz)
     : id{id},
@@ -16,7 +17,8 @@ ServiceNode::ServiceNode(int id, size_t maxQueueSz)
       maxQueueSz{maxQueueSz},
       totST{0},
       numJobsProcessed{0},
-      lastDeparture{0.0} {}
+      lastDeparture{0.0},
+      totDelay{0.0} {}
 
 void ServiceNode::updateUtil(double mostRecentDep) {
   util = ((double)numJobsProcessed / mostRecentDep) * calcAvgSt();
@@ -65,6 +67,7 @@ bool ServiceNode::enterNode(Job job) {
     ++numJobsProcessed;                 // this Job can be processed
     updateTotST(job.getServiceTime());  // increase the total ST
     updateUtil(job.calcDeparture());    // update utilization
+    totDelay += job.getDelay();         // update the delay.
     // update the last Job's departure time
     lastDeparture = job.calcDeparture();
 
@@ -81,22 +84,6 @@ bool ServiceNode::enterNode(Job job) {
 
 void ServiceNode::processQueue(double currArrival) {
   if (jobQueue.size() > 0) {
-    // 1. pop first element
-    // 2. calculate the service begin time
-    //    A. if begin time <= lastDeparture
-    //       I. update the lastDeparture
-    //      II.
-    // PROBLEM: need to figure out how the simulation will run
-    // cant pop an element and put it back. Also won't run in real-time.
-    // This means, that the queue might not be empty when a job is trying to be
-    // added to the ServiceNode.
-
-    // check the most recent arrival time. if it's less than the running job's
-    // departure time, then update and process the server until a departure >
-    // arrival is found.
-
-    // process queue
-
     // get the most recent arrival time (back of queue)
     // double currentTime{jobQueue.back().getArrival()};
     // if the job in the server is still being processed
@@ -128,9 +115,7 @@ double ServiceNode::getUtil() const { return util; }
 
 int ServiceNode::getQueueLength() const { return jobQueue.size(); }
 
-double ServiceNode::calcAvgSt() {
-  return totST / numJobsProcessed;
-}
+double ServiceNode::calcAvgSt() const { return totST / numJobsProcessed; }
 
 double ServiceNode::updateTotST(double lastST) {
   totST = totST + lastST;
@@ -139,13 +124,18 @@ double ServiceNode::updateTotST(double lastST) {
 
 int ServiceNode::getNumProcJobs() const { return numJobsProcessed; }
 
-double ServiceNode::getAvgSt() const {return totST / numJobsProcessed; }
+double ServiceNode::calcAvgQueue() const {
+  double avgQ{0};
+  if (numJobsProcessed > 0) {
+    avgQ = totDelay / lastDeparture;
+  }
+  return avgQ;
+}
 
 std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
-  out << "ID: " << node.getId() 
-      << ", util: " << node.getUtil()
-      << ", njobs: " << node.getNumProcJobs()
-      << ", avg_s: " << node.getAvgSt();
+  out << "ID: " << node.getId() << ", util: " << node.getUtil()
+      << ", njobs: " << node.getNumProcJobs() << ", avg_s: " << node.calcAvgSt()
+      << ", avg_q: " << node.calcAvgQueue();
 
   return out;
 }

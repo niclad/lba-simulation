@@ -39,4 +39,4 @@ run:
 	make main && ./main.out
 
 clean:
-	rm -rf *.o *.a *.out
+	rm -rf *.o *.a *.out *.csv

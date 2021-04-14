@@ -110,31 +110,8 @@ int main(int argc, char* argv[]) {
   
   PutSeed(SEED);  // seed the RNG
 
-  //serverDistribution(100, 10000);
-  // std::vector<ServiceNode> nodes = {};
-  // for (int ii = 0; ii < 10; ii++) {
-  //   nodes.push_back(ServiceNode(ii));
-  // }
-
-  // // generic LBA and ServiceNode test
-  // lba::testLBA(nodes);
-
-  // // test with round robin LBA
-  // std::cout << "+-------Round Robin--------+" << std::endl;
-  // test_lba(lba::roundrobin, nodes);
-
-  // // test with random LBA
-  // std::cout << "+-------Random--------+" << std::endl;
-  // test_lba(lba::random, nodes, 50);
-
-  // testing sqms simulation
+  // testing mqms simulation
   mqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
-
-  // test the another simulation
-  nNodes = 3;
-  qSize = 3;
-  nJobs = 100;
-  //mqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
 }
 
 // get a service time for a job
@@ -330,7 +307,7 @@ void accumStats(node_list nodes, int nJobs, Model modelName,
   // will need to get n_jobs
   int nodeId{0};
   for (ServiceNode node : nodes) {
-    data << nodeId++ << "," << node.getUtil() << "," << node.getAvgSt() << ","
+    data << nodeId++ << "," << node.getUtil() << "," << node.calcAvgSt() << ","
          << node.getNumProcJobs() << std::endl;
   }
 
