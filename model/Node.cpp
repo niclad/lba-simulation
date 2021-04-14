@@ -149,6 +149,6 @@ std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
   return out;
 }
 
-double ServiceNode::calcAvgDelay(double mostRecentDep) {
-  return totDelay / mostRecentDep;
+double ServiceNode::calcAvgDelay() {
+  return totDelay / lastDeparture;
 }
