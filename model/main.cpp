@@ -330,7 +330,7 @@ void accumStats(node_list nodes, int nJobs, Model modelName,
   // will need to get n_jobs
   int nodeId{0};
   for (ServiceNode node : nodes) {
-    data << nodeId++ << "," << node.getUtil() << "," << node.getAvgSt() << ","
+    data << nodeId++ << "," << node.getUtil() << "," << node.calcAvgSt() << ","
          << node.getNumProcJobs() << std::endl;
   }
 
