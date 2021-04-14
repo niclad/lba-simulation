@@ -1,4 +1,5 @@
 #include "Job.h"
+
 #include "rvgs.h"
 
 Job::Job(double arrival) : arrival{arrival}, delay{0}, service{getService()} {
@@ -20,20 +21,18 @@ double Job::setDelay(double prevDeparture) {
   return delay;
 }
 
-double Job::getServiceTime() const {
-  return service;
-}
+double Job::getServiceTime() const { return service; }
 
-double Job::getArrival() const {
-  return arrival;
-}
+double Job::getArrival() const { return arrival; }
 
 double Job::getService() {
   // get an exponential random variate in seconds
-  return Exponential(
-      4049);  // 4049 sec. is mean random service time on discovery -- switch to minutes?
+  return Exponential(4049);  // 4049 sec. is mean random service time on
+                             // discovery -- switch to minutes?
 }
 
 double Job::calcWait() { return delay + service; }
 
 double Job::calcDeparture() { return arrival + calcWait(); }
+
+double Job::getDelay() const { return delay; }
