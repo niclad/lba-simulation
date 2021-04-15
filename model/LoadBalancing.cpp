@@ -32,6 +32,7 @@ int lba::random(std::vector<ServiceNode> nodeList, double _ct) {
  */
 
 int lba::utilizationbased(std::vector<ServiceNode> nodeList, double currT) {
+    // NOTE: this should still work for both sqms and mqms
     int least_utilized{0};
 
     // find the index with the least utilization
@@ -41,7 +42,7 @@ int lba::utilizationbased(std::vector<ServiceNode> nodeList, double currT) {
 
         // update utilization if applicable
         if (nodeList[ii].getNumProcJobs() > 0) {
-          nodeList[ii].updateUtil(currT);
+          nodeList[ii].updateUtil(currT); // maybe only calc util then update later to prevent doubling
         }
 
         // check if this is less utilized
@@ -54,6 +55,8 @@ int lba::utilizationbased(std::vector<ServiceNode> nodeList, double currT) {
 } 
 
 int lba::leastconnections(std::vector<ServiceNode> nodeList, double currT) {
+    // NOTE: Not sure how to rework for sqms. Perhaps a condition on the model
+    // type could work. Perhaps average number of jobs processed by this node?
     int least_connections{0};
 
     // find the index with the least number of jobs
