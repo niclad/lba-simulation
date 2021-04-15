@@ -1,8 +1,9 @@
+#include <cstdlib>
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <queue>
 #include <vector>
-#include <cstdlib>
 
 #include "Job.h"
 #include "LoadBalancing.h"
@@ -35,26 +36,17 @@ const struct algs_t {
 } Algs;
 // this is a list that should be able to be indexed using the enumerator
 const std::vector<lba_func> LBA_FUNCTIONS = {
-  lba::roundrobin,
-  lba::random,
-  lba::utilizationbased,
-  lba::leastconnections
-};
-const std::vector<std::string> LBA_NAMES = {
-  "roundrobin",
-  "random",
-  "utilbased",
-  "leastcxns"
-};
+    lba::roundrobin, lba::random, lba::utilizationbased, lba::leastconnections};
+const std::vector<std::string> LBA_NAMES = {"roundrobin", "random", "utilbased",
+                                            "leastcxns"};
 // =========================== END GLOBAL VARIABLES ============================
 
 lba_alg name_to_index(std::string name) {
-    for (size_t ii = 0; ii < LBA_NAMES.size(); ii++){
-        if (name == LBA_NAMES[ii]) return ii;
-    }
-    return -1;
+  for (size_t ii = 0; ii < LBA_NAMES.size(); ii++) {
+    if (name == LBA_NAMES[ii]) return ii;
+  }
+  return -1;
 }
-
 
 // tests a load balancing algorithm with 'nodes', 'num_iter' times
 void test_lba(std::function<int(std::vector<ServiceNode>)> lba,
@@ -74,8 +66,8 @@ void log_sim(lba_func lba, int nNodes, int qSize, int nJobs, node_list nodes);
 /* TO-DO:
  * Implement the function declartions below this list....
  */
-void sqmsSimulation(int nNodes, lba_alg lba, int nJobs);
-void mqmsSimulation(int nNodes, lba_alg lba, int qSz, int nJobs);
+void sqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs);
+void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs);
 void accumStats(node_list nodes, int nJobs, Model modelName,
                 std::string funcName);
 void serverDistribution(int nNodes, int nJobs);
@@ -93,8 +85,7 @@ int main(int argc, char* argv[]) {
 
   lba_alg lbaChoice{name_to_index(argv[2])};
   if (lbaChoice < 0 || lbaChoice > (int)LBA_FUNCTIONS.size()) {
-    std::cerr << "Invalid load balancing algorithm: " 
-            << argv[2] << std::endl;
+    std::cerr << "Invalid load balancing algorithm: " << argv[2] << std::endl;
     std::cerr << "Possible choices are: ";
     for (auto choice : LBA_NAMES) std::cout << choice << " ";
     std::cout << std::endl;
@@ -102,12 +93,10 @@ int main(int argc, char* argv[]) {
   }
   int qSize{atoi(argv[3])};
   int nJobs{atoi(argv[4])};
-  std::cout << "Running simulation with: "
-      << nNodes << " Nodes, "
-      << argv[2] << " Algorithm, "
-      << qSize << " Queue length, "
-      << nJobs << " Jobs." << std::endl;
-  
+  std::cout << "Running simulation with: " << nNodes << " Nodes, " << argv[2]
+            << " Algorithm, " << qSize << " Queue length, " << nJobs << " Jobs."
+            << std::endl;
+
   PutSeed(SEED);  // seed the RNG
 
   // testing mqms simulation
@@ -151,9 +140,9 @@ node_list buildNodeList(int nNodes, int qSz) {
  * @param lba The load-balancing algorithm to use to choose a node
  * @return int The index of the node to send a job to
  */
-int dispatcher(node_list nodes, lba_func lba, double currT) {
-  int nodeIdx{-1};       // -1 as no node will have this index
-  nodeIdx = lba(nodes, currT);  // pick a node using the LBA
+int dispatcher(node_list nodes, lba_func alg, double currT) {
+  int nodeIdx{-1};              // -1 as no node will have this index
+  nodeIdx = alg(nodes, currT);  // pick a node using the LBA
 
   return nodeIdx;
 }
@@ -201,9 +190,12 @@ void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
   // select the algorithm besing used
   lba_func alg{LBA_FUNCTIONS[lba]};
   std::string funcName{LBA_NAMES[lba]};
-  
+
   // build node list
   node_list nodes{buildNodeList(nNodes, qSize)};
+
+  // track the total number of rejections
+  int totalRejects{0};
 
   // run for the number of jobs
   for (int ii = 0; ii < nJobs; ii++) {
@@ -222,6 +214,8 @@ void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
       // node unable to be added, this is where different rejection
       // techiniques could be used
       // std::cout << "Job unsuccessfully added" << std::endl;
+
+      ++totalRejects;
     }
   }
 
@@ -237,35 +231,57 @@ void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
 }
 
 /**
- * @brief Run a multi-queue, multi-server simulation
+ * @brief Run a single-queue, multi-server simulation
  *
  * The simulation will generate it's own list of nodes and use the LBA to send
  * nJobs to the nodes in the model.
  *
  * @param nNodes The number of nodes to use in the simulation
  * @param lba The node balancing
+ * @param qSize The size of the dispatcher's queue
  * @param nJobs The number of jobs to "process" in the simulation
  */
-void sqmsSimulation(int nNodes, lba_alg lba, int nJobs) {
-  /* TO-DO:
-   * Actually implement code.
-   * Generate nodes list
-   * Run simulation to n jobs
-   */
+void sqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
+  // select the algorithm besing used
+  lba_func alg{LBA_FUNCTIONS[lba]};
+  std::string funcName{LBA_NAMES[lba]};
 
   // build node list
   node_list nodes{buildNodeList(nNodes, 0)};
 
+  // the total number of rejections
+  int totalRejects{0};
+
+  // the dispatcher's queue
+  std::queue<Job> jobQueue;
+
   // run for the number of jobs
   for (int ii = 0; ii < nJobs; ii++) {
-    
+    Job job{getArrival()};  // get a job's arrival time
+
+    // check to make sure the job can be queued  
+    if (jobQueue.size() < qSize) {
+      jobQueue.push(job);     // the job is able to enter the queue.
+    } else {
+      ++totalRejects;
+    }
+
+    // pick the service node to send the current job to
+    int receiver{dispatcher(nodes, alg, job.getArrival())};
+
+    // send the job to the selected node
+    if (nodes[receiver].enterNode(job)) {
+      jobQueue.pop(); // remove the job from the queue as it can be serviced
+    }
   }
 
   // get simulation results
   for (auto node : nodes) {
-    std::cout << "Utilization: " << node.getUtil() << "   Average Service Time: " 
-      << node.calcAvgSt() << std::endl;
+    std::cout << node << std::endl;
   }
+
+  accumStats(nodes, nJobs, Model::sqms, funcName);
+  log_sim(funcName, nNodes, 0, nJobs, nodes);
 }
 
 /**
@@ -280,7 +296,7 @@ void serverDistribution(int nNodes, int nJobs) {
 
   // list of available load-balancing algorithms
   std::vector<lba_func> funcs = {lba::roundrobin, lba::random,
-                                lba::utilizationbased, lba::leastconnections};
+                                 lba::utilizationbased, lba::leastconnections};
 
   std::ofstream lba_dat("lba-data.csv");
 
