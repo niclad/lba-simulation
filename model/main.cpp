@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <functional>
+#include <iomanip>
 #include <iostream>
 #include <queue>
 #include <vector>
@@ -58,20 +59,21 @@ void test_lba(std::function<int(std::vector<ServiceNode>)> lba,
 
 // Function declarations
 double getArrival();
-node_list buildNodeList(int nNodes, int qSz);
+node_list buildNodeList(int nNodes, size_t qSz);
 node_idx dispatcher(node_list nodes, lba_func lba);
 void log_sim(lba_func lba, int nNodes, int qSize, int nJobs, node_list nodes);
 
 /* TO-DO:
  * Implement the function declartions below this list....
  */
-void sqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs);
-void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs);
+void sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs);
+void mqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs);
 void accumStats(node_list nodes, int nJobs, Model modelName,
                 std::string funcName);
 void serverDistribution(int nNodes, int nJobs);
 void log_sim(std::string alg, int nNodes, int qSize, int nJobs,
              node_list nodes);
+void printStats(node_list nodes, int totalRejects, int nJobs);
 
 int main(int argc, char* argv[]) {
   // get command line arguments
@@ -84,7 +86,7 @@ int main(int argc, char* argv[]) {
   int nNodes{atoi(argv[1])};  // set the number of nodes
 
   // set the seed
-  int seed{atol(argv[5]) > 999999999 ? 999999999 : atol(argv[5])};
+  long int seed{atol(argv[5]) > 999999999 ? 999999999 : atol(argv[5])};
 
   // pick the user's LBA
   lba_alg lbaChoice{name_to_index(argv[2])};
@@ -105,6 +107,9 @@ int main(int argc, char* argv[]) {
 
   // testing mqms simulation
   mqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
+
+  // testing sqms simulation
+  // sqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
 }
 
 // get a service time for a job
@@ -123,7 +128,7 @@ double getArrival() {
  * @param qSz The queue size of the nodes
  * @return std::vector<ServiceNode>
  */
-node_list buildNodeList(int nNodes, int qSz) {
+node_list buildNodeList(int nNodes, size_t qSz) {
   node_list tempList;
 
   for (int id = 0; id < nNodes; id++) {
@@ -190,7 +195,7 @@ void log_sim(std::string alg, int nNodes, int qSize, int nJobs,
  * @param lba The node balancing
  * @param nJobs The number of jobs to "process" in the simulation
  */
-void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
+void mqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   // select the algorithm besing used
   lba_func alg{LBA_FUNCTIONS[lba]};
   std::string funcName{LBA_NAMES[lba]};
@@ -224,9 +229,7 @@ void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
   }
 
   // get simulation results
-  for (auto node : nodes) {
-    std::cout << node << std::endl;
-  }
+  printStats(nodes, totalRejects, nJobs);
 
   // TODO: make this dependent on CLI flag
   // also, need better way to get alg name
@@ -245,7 +248,7 @@ void mqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
  * @param qSize The size of the dispatcher's queue
  * @param nJobs The number of jobs to "process" in the simulation
  */
-void sqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
+void sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   // select the algorithm besing used
   lba_func alg{LBA_FUNCTIONS[lba]};
   std::string funcName{LBA_NAMES[lba]};
@@ -280,12 +283,25 @@ void sqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
   }
 
   // get simulation results
-  for (auto node : nodes) {
-    std::cout << node << std::endl;
-  }
+  printStats(nodes, totalRejects, nJobs);
 
   accumStats(nodes, nJobs, Model::sqms, funcName);
   log_sim(funcName, nNodes, 0, nJobs, nodes);
+}
+
+void printStats(node_list nodes, int totalRejects, int nJobs) {
+  // calculate the fraction of rejected jobs
+  double rejectRatio{(static_cast<double>(totalRejects) / nJobs) * 100};
+
+  // print the reject amount
+  std::cout << std::setprecision(5) 
+            << "Rejection amount: " << rejectRatio  << "%" << std::endl;
+  
+  // print the node-wise data
+  for (ServiceNode node : nodes) {
+    std::cout << node << std::endl;
+  }
+
 }
 
 /**
