@@ -1,5 +1,5 @@
+#include <iomanip>
 #include "Node.h"
-
 #include "Job.h"
 
 ServiceNode::ServiceNode(int id)
@@ -21,7 +21,7 @@ ServiceNode::ServiceNode(int id, size_t maxQueueSz)
       totDelay{0.0} {}
 
 void ServiceNode::updateUtil(double mostRecentDep) {
-  util = ((double)numJobsProcessed / mostRecentDep) * calcAvgSt();
+  util = (totST / mostRecentDep);
 }
 
 bool ServiceNode::enterQueue(Job& job) {
@@ -132,10 +132,30 @@ double ServiceNode::calcAvgQueue() const {
   return avgQ;
 }
 
+double ServiceNode::calcUtil(Job job) {
+  double departure{job.calcDeparture()};  // the jobs departure time
+  double st{job.getServiceTime()};        // the jobs service time
+
+  // calculate a temporary average service time
+  double tempSt{(totST + st)};
+
+  // calculate a temporary utilization
+  double tempUtil{tempSt / departure};
+
+  return tempUtil;
+}
+
+double ServiceNode::calcAvgDelay() const { return totDelay / numJobsProcessed; }
+
+int ServiceNode::getMaxQueueLen() const { return maxQueueSz; }
+
 std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
-  out << "ID: " << node.getId() << ", util: " << node.getUtil()
-      << ", njobs: " << node.getNumProcJobs() << ", avg_s: " << node.calcAvgSt()
-      << ", avg_q: " << node.calcAvgQueue();
+  out << "ID: " << std::setw(2) << node.getId() 
+      << ", util: " << std::setw(7) << node.getUtil()
+      << ", njobs: " << std::setw(6) << node.getNumProcJobs() 
+      << ", avg_s: " << std::setw(6) << node.calcAvgSt()
+      << ", avg_q: " << std::setw(4) << node.calcAvgQueue()
+      << ", avg_d: " << std::setw(6) << node.calcAvgDelay();
 
   return out;
 }

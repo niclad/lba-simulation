@@ -131,6 +131,28 @@ class ServiceNode {
    */
   double calcAvgQueue() const;
 
+  /**
+   * @brief Calculate the utilization for an arriving job without updating it.
+   * 
+   * @param job The job to use for the calculation
+   * @return double The utilization
+   */
+  double calcUtil(Job job);
+
+  /**
+   * @brief Calculate the average delay for jobs in the node
+   * 
+   * @return double The average delay
+   */
+  double calcAvgDelay() const;
+
+  /**
+   * @brief Get the maximum queue size for a node
+   * 
+   * @return int The maxmium queue length
+   */
+  int getMaxQueueLen() const;
+
  private:
   /**
    * @brief Calculate the average service time

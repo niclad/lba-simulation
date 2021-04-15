@@ -2,6 +2,8 @@
 
 #include "rvgs.h"
 
+const long int SERVICE_MEAN{4049};
+
 Job::Job(double arrival) : arrival{arrival}, delay{0}, service{getService()} {
   // service needs to be generated via GetService
 }
@@ -27,8 +29,8 @@ double Job::getArrival() const { return arrival; }
 
 double Job::getService() {
   // get an exponential random variate in seconds
-  return Exponential(4049);  // 4049 sec. is mean random service time on
-                             // discovery -- switch to minutes?
+  return Exponential(SERVICE_MEAN);  // 4049 sec. is mean random service time on
+                                     // discovery -- switch to minutes?
 }
 
 double Job::calcWait() { return delay + service; }
