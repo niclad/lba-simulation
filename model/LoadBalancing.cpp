@@ -42,9 +42,8 @@ int lba::utilizationbased(std::vector<ServiceNode> nodeList, Job job) {
     nodeList[ii].processQueue(job.getArrival());
 
     // check if this is less utilized
-    // NOTE: using calc util seems to make things better i.e. more balanced 
-    if (nodeList[least_utilized].calcUtil(job) >
-        nodeList[ii].calcUtil(job)) {
+    // NOTE: using calc util seems to make things better i.e. more balanced
+    if (nodeList[least_utilized].calcUtil(job) > nodeList[ii].calcUtil(job)) {
       least_utilized = ii;
     }
   }
@@ -53,18 +52,31 @@ int lba::utilizationbased(std::vector<ServiceNode> nodeList, Job job) {
 
 int lba::leastconnections(std::vector<ServiceNode> nodeList, Job job) {
   // NOTE: Not sure how to rework for sqms. Perhaps a condition on the model
-  // type could work. Perhaps average number of jobs processed by this node?
+  // type could work. Perhaps number of jobs processed by this node?
   int least_connections{0};
 
-  // find the index with the least number of jobs
-  for (size_t ii = 0; ii < nodeList.size(); ii++) {
-    nodeList[ii].processQueue(job.getArrival());
+  // get the maximum queue lengh for the nodes in the list
+  int max_queue_size{nodeList[0].getMaxQueueLen()};
 
-    // use the average queue lengths of nodes to determine best node
-    // for a job
-    if (nodeList[least_connections].calcAvgQueue() >
-        nodeList[ii].calcAvgQueue()) {
-      least_connections = ii;
+  // pick a node from nodes with a queue
+  if (max_queue_size > 0) {
+    // find the index with the least number of jobs
+    for (size_t ii = 0; ii < nodeList.size(); ii++) {
+      nodeList[ii].processQueue(job.getArrival());
+
+      // use the average queue lengths of nodes to determine best node
+      // for a job
+      if (nodeList[least_connections].calcAvgQueue() >
+          nodeList[ii].calcAvgQueue()) {
+        least_connections = ii;
+      }
+    }
+  } else {  // pick a node from those without queues
+    for (size_t ii = 0; ii < nodeList.size(); ii++) {
+      if (nodeList[least_connections].getNumProcJobs() >
+          nodeList[ii].getNumProcJobs()) {
+        least_connections = ii;
+      }
     }
   }
 
