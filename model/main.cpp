@@ -24,7 +24,6 @@ const int HOUR_SEC{DAY_SEC / 24};
 const double START{0.0};                 // start time for the simulation
 const double END{(double)DAY_SEC * 30};  // end time for the simulation
 enum class Model { mqms, sqms };         // model enums
-const long int SEED{12345};              // seed for RNG
 std::string alg{""};
 
 // NOTE: surely there must be a better way to deal with the below
@@ -76,13 +75,18 @@ void log_sim(std::string alg, int nNodes, int qSize, int nJobs,
 
 int main(int argc, char* argv[]) {
   // get command line arguments
-  if (argc != 5) {
+  if (argc < 5) {
     std::cout << "Usage: " << argv[0] << " ";
-    std::cout << "<nNodes> <lba_alg> <qSize> <nJobs>" << std::endl;
+    std::cout << "<nNodes> <lba_alg> <qSize> <nJobs> <seed>" << std::endl;
     return 1;
   }
-  int nNodes{atoi(argv[1])};
 
+  int nNodes{atoi(argv[1])};  // set the number of nodes
+
+  // set the seed
+  int seed{atol(argv[5]) > 999999999 ? 999999999 : atol(argv[5])};
+
+  // pick the user's LBA
   lba_alg lbaChoice{name_to_index(argv[2])};
   if (lbaChoice < 0 || lbaChoice > (int)LBA_FUNCTIONS.size()) {
     std::cerr << "Invalid load balancing algorithm: " << argv[2] << std::endl;
@@ -94,10 +98,10 @@ int main(int argc, char* argv[]) {
   int qSize{atoi(argv[3])};
   int nJobs{atoi(argv[4])};
   std::cout << "Running simulation with: " << nNodes << " Nodes, " << argv[2]
-            << " Algorithm, " << qSize << " Queue length, " << nJobs << " Jobs."
-            << std::endl;
+            << " Algorithm, " << qSize << " Queue length, " << nJobs
+            << " Jobs, " << seed << " Seed." << std::endl;
 
-  PutSeed(SEED);  // seed the RNG
+  PutSeed(seed);  // seed the RNG
 
   // testing mqms simulation
   mqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
@@ -259,9 +263,9 @@ void sqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
   for (int ii = 0; ii < nJobs; ii++) {
     Job job{getArrival()};  // get a job's arrival time
 
-    // check to make sure the job can be queued  
+    // check to make sure the job can be queued
     if (jobQueue.size() < qSize) {
-      jobQueue.push(job);     // the job is able to enter the queue.
+      jobQueue.push(job);  // the job is able to enter the queue.
     } else {
       ++totalRejects;
     }
@@ -271,7 +275,7 @@ void sqmsSimulation(int nNodes, lba_alg lba, int qSize, int nJobs) {
 
     // send the job to the selected node
     if (nodes[receiver].enterNode(job)) {
-      jobQueue.pop(); // remove the job from the queue as it can be serviced
+      jobQueue.pop();  // remove the job from the queue as it can be serviced
     }
   }
 
@@ -318,13 +322,17 @@ void accumStats(node_list nodes, int nJobs, Model modelName,
   std::ofstream data(model + "_" + funcName + ".csv");
 
   // write the headers
-  data << "sid,avg_x,avg_s,n_jobs" << std::endl;
+  data << "sid,avg_x,avg_s,avg_q,avg_d,n_jobs" << std::endl;
 
   // will need to get n_jobs
   int nodeId{0};
   for (ServiceNode node : nodes) {
-    data << nodeId++ << "," << node.getUtil() << "," << node.calcAvgSt() << ","
-         << node.getNumProcJobs() << std::endl;
+    data << nodeId++ << ","                      // sid
+         << node.getUtil() << ","                // avg_x
+         << node.calcAvgSt() << ","              // avg_s
+         << node.calcAvgQueue() << ","           // avg_q
+         << node.calcAvgDelay() << ","           // avg_d
+         << node.getNumProcJobs() << std::endl;  // n_jobs
   }
 
   data.close();
