@@ -146,7 +146,7 @@ double ServiceNode::calcUtil(Job job) {
 }
 
 double ServiceNode::calcAvgDelay() const {
-  return totDelay / lastDeparture;
+  return totDelay / numJobsProcessed;
 }
 
 std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
