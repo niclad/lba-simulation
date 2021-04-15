@@ -145,15 +145,13 @@ double ServiceNode::calcUtil(Job job) {
   return tempUtil;
 }
 
-double ServiceNode::calcAvgDelay() const {
-  return totDelay / numJobsProcessed;
-}
+double ServiceNode::calcAvgDelay() const { return totDelay / numJobsProcessed; }
+
+int ServiceNode::getMaxQueueLen() const { return maxQueueSz; }
 
 std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
-  out << "ID: " << node.getId()
-      << ", util: " << node.getUtil()
-      << ", njobs: " << node.getNumProcJobs() 
-      << ", avg_s: " << node.calcAvgSt()
+  out << "ID: " << node.getId() << ", util: " << node.getUtil()
+      << ", njobs: " << node.getNumProcJobs() << ", avg_s: " << node.calcAvgSt()
       << ", avg_q: " << node.calcAvgQueue()
       << ", avg_d: " << node.calcAvgDelay();
 
