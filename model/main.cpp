@@ -106,10 +106,14 @@ int main(int argc, char* argv[]) {
   PutSeed(seed);  // seed the RNG
 
   // testing mqms simulation
+  std::cout << "-------------------------------------------------" << std::endl;
+  std::cout << "MQMS SIMULATION:" << std::endl;
   mqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
-
+  
   // testing sqms simulation
-  // sqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
+  std::cout << "-------------------------------------------------" << std::endl;
+  std::cout << "SQMS SIMULATION:" << std::endl;
+  sqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
 }
 
 // get a service time for a job
