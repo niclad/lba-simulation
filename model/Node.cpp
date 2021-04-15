@@ -21,7 +21,7 @@ ServiceNode::ServiceNode(int id, size_t maxQueueSz)
       totDelay{0.0} {}
 
 void ServiceNode::updateUtil(double mostRecentDep) {
-  util = ((double)numJobsProcessed / mostRecentDep) * calcAvgSt();
+  util = (totST / mostRecentDep);
 }
 
 bool ServiceNode::enterQueue(Job& job) {
@@ -135,22 +135,27 @@ double ServiceNode::calcAvgQueue() const {
 double ServiceNode::calcUtil(Job job) {
   double departure{job.calcDeparture()};  // the jobs departure time
   double st{job.getServiceTime()};        // the jobs service time
-  int tempNumJobProc{numJobsProcessed + 1};
 
   // calculate a temporary average service time
-  double tempAvgSt{(totST + st) / tempNumJobProc};
+  double tempSt{(totST + st)};
 
   // calculate a temporary utilization
-  double tempUtil{(static_cast<double>(tempNumJobProc) / departure) 
-                  * tempAvgSt};
+  double tempUtil{tempSt / departure};
 
   return tempUtil;
 }
 
+double ServiceNode::calcAvgDelay() const {
+  return totDelay / lastDeparture;
+}
+
 std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
-  out << "ID: " << node.getId() << ", util: " << node.getUtil()
-      << ", njobs: " << node.getNumProcJobs() << ", avg_s: " << node.calcAvgSt()
-      << ", avg_q: " << node.calcAvgQueue();
+  out << "ID: " << node.getId()
+      << ", util: " << node.getUtil()
+      << ", njobs: " << node.getNumProcJobs() 
+      << ", avg_s: " << node.calcAvgSt()
+      << ", avg_q: " << node.calcAvgQueue()
+      << ", avg_d: " << node.calcAvgDelay();
 
   return out;
 }
