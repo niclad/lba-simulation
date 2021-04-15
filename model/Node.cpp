@@ -1,5 +1,5 @@
+#include <iomanip>
 #include "Node.h"
-
 #include "Job.h"
 
 ServiceNode::ServiceNode(int id)
@@ -150,10 +150,12 @@ double ServiceNode::calcAvgDelay() const { return totDelay / numJobsProcessed; }
 int ServiceNode::getMaxQueueLen() const { return maxQueueSz; }
 
 std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
-  out << "ID: " << node.getId() << ", util: " << node.getUtil()
-      << ", njobs: " << node.getNumProcJobs() << ", avg_s: " << node.calcAvgSt()
-      << ", avg_q: " << node.calcAvgQueue()
-      << ", avg_d: " << node.calcAvgDelay();
+  out << "ID: " << std::setw(2) << node.getId() 
+      << ", util: " << std::setw(7) << node.getUtil()
+      << ", njobs: " << std::setw(6) << node.getNumProcJobs() 
+      << ", avg_s: " << std::setw(6) << node.calcAvgSt()
+      << ", avg_q: " << std::setw(4) << node.calcAvgQueue()
+      << ", avg_d: " << std::setw(6) << node.calcAvgDelay();
 
   return out;
 }
