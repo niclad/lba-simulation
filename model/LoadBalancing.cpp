@@ -4,7 +4,7 @@
 
 #include "rvgs.h"
 
-int lba::roundrobin(std::vector<ServiceNode> nodeList, double _ct) {
+int lba::roundrobin(std::vector<ServiceNode> nodeList, Job job) {
   // static counter of jobs
   static int index{0};
 
@@ -17,7 +17,7 @@ int lba::roundrobin(std::vector<ServiceNode> nodeList, double _ct) {
   return server;
 }
 
-int lba::random(std::vector<ServiceNode> nodeList, double _ct) {
+int lba::random(std::vector<ServiceNode> nodeList, Job job) {
   // return a random server index
   return Equilikely(0, nodeList.size() - 1);
 }
@@ -32,37 +32,33 @@ int lba::random(std::vector<ServiceNode> nodeList, double _ct) {
  * never be picked again
  */
 
-int lba::utilizationbased(std::vector<ServiceNode> nodeList, double currT) {
+int lba::utilizationbased(std::vector<ServiceNode> nodeList, Job job) {
   // NOTE: this should still work for both sqms and mqms
   int least_utilized{0};
 
   // find the index with the least utilization
   for (size_t ii = 0; ii < nodeList.size(); ii++) {
     // process queue
-    nodeList[ii].processQueue(currT);
-
-    // update utilization if applicable
-    // NOTE: why is this here? could calcUtil() in Node be used here instead?
-    if (nodeList[ii].getNumProcJobs() > 0) {
-      nodeList[ii].updateUtil(currT);  // maybe only calc util then update later to prevent doubling
-    }
+    nodeList[ii].processQueue(job.getArrival());
 
     // check if this is less utilized
-    if (nodeList[least_utilized].getUtil() > nodeList[ii].getUtil()) {
+    // NOTE: using calc util seems to make things better i.e. more balanced 
+    if (nodeList[least_utilized].calcUtil(job) >
+        nodeList[ii].calcUtil(job)) {
       least_utilized = ii;
     }
   }
   return least_utilized;
 }
 
-int lba::leastconnections(std::vector<ServiceNode> nodeList, double currT) {
+int lba::leastconnections(std::vector<ServiceNode> nodeList, Job job) {
   // NOTE: Not sure how to rework for sqms. Perhaps a condition on the model
   // type could work. Perhaps average number of jobs processed by this node?
   int least_connections{0};
 
   // find the index with the least number of jobs
   for (size_t ii = 0; ii < nodeList.size(); ii++) {
-    nodeList[ii].processQueue(currT);
+    nodeList[ii].processQueue(job.getArrival());
 
     // use the average queue lengths of nodes to determine best node
     // for a job
@@ -75,7 +71,7 @@ int lba::leastconnections(std::vector<ServiceNode> nodeList, double currT) {
   return least_connections;
 }
 
-int lba::testLBA(std::vector<ServiceNode> nodeList, double currT) {
+int lba::testLBA(std::vector<ServiceNode> nodeList, Job job) {
   if (nodeList.size() > 0) {
     for (ServiceNode node : nodeList) {
       std::cout << node << std::endl;
