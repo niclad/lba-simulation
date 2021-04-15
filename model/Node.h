@@ -139,6 +139,8 @@ class ServiceNode {
    */
   double calcUtil(Job job);
 
+  double calcAvgDelay() const;
+
  private:
   /**
    * @brief Calculate the average service time
