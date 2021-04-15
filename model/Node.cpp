@@ -132,6 +132,21 @@ double ServiceNode::calcAvgQueue() const {
   return avgQ;
 }
 
+double ServiceNode::calcUtil(Job job) {
+  double departure{job.calcDeparture()};  // the jobs departure time
+  double st{job.getServiceTime()};        // the jobs service time
+  int tempNumJobProc{numJobsProcessed + 1};
+
+  // calculate a temporary average service time
+  double tempAvgSt{(totST + st) / tempNumJobProc};
+
+  // calculate a temporary utilization
+  double tempUtil{(static_cast<double>(tempNumJobProc) / departure) 
+                  * tempAvgSt};
+
+  return tempUtil;
+}
+
 std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
   out << "ID: " << node.getId() << ", util: " << node.getUtil()
       << ", njobs: " << node.getNumProcJobs() << ", avg_s: " << node.calcAvgSt()
