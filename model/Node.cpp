@@ -1,5 +1,7 @@
-#include <iomanip>
 #include "Node.h"
+
+#include <iomanip>
+
 #include "Job.h"
 
 ServiceNode::ServiceNode(int id)
@@ -150,12 +152,20 @@ double ServiceNode::calcAvgDelay() const { return totDelay / numJobsProcessed; }
 int ServiceNode::getMaxQueueLen() const { return maxQueueSz; }
 
 std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
-  out << "ID: " << std::setw(2) << node.getId() 
-      << ", util: " << std::setw(7) << node.getUtil()
-      << ", njobs: " << std::setw(6) << node.getNumProcJobs() 
-      << ", avg_s: " << std::setw(6) << node.calcAvgSt()
-      << ", avg_q: " << std::setw(4) << node.calcAvgQueue()
-      << ", avg_d: " << std::setw(6) << node.calcAvgDelay();
+  // choose to print the delay and queue length.
+  if (node.getMaxQueueLen() > 0) {
+    out << "ID: " << std::setw(2) << node.getId() << ", util: " << std::setw(7)
+        << node.getUtil() << ", njobs: " << std::setw(6)
+        << node.getNumProcJobs() << ", avg_s: " << std::setw(6)
+        << node.calcAvgSt() << ", avg_q: " << std::setw(4)
+        << node.calcAvgQueue() << ", avg_d: " << std::setw(6)
+        << node.calcAvgDelay();
+  } else { // don't print delay and queue len if there's no queue
+    out << "ID: " << std::setw(2) << node.getId() << ", util: " << std::setw(7)
+        << node.getUtil() << ", njobs: " << std::setw(6)
+        << node.getNumProcJobs() << ", avg_s: " << std::setw(6)
+        << node.calcAvgSt();
+  }
 
   return out;
 }
