@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
 
   int nNodes{atoi(argv[1])};  // set the number of nodes
 
-  // set the seed
+  // set the seed (check that seed was given)
   long int seed{argc < 6 ? 123456789 : atol(argv[5])};
 
 
