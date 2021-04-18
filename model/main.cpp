@@ -86,7 +86,8 @@ int main(int argc, char* argv[]) {
   int nNodes{atoi(argv[1])};  // set the number of nodes
 
   // set the seed
-  long int seed{atol(argv[5]) > 999999999 ? 999999999 : atol(argv[5])};
+  long int seed{argc < 6 ? 123456789 : atol(argv[5])};
+
 
   // pick the user's LBA
   lba_alg lbaChoice{name_to_index(argv[2])};
