@@ -14,9 +14,18 @@
 
 // Type definition aliases
 typedef int node_idx;
-typedef std::function<node_idx(std::vector<ServiceNode>, double)> lba_func;
+typedef std::function<node_idx(std::vector<ServiceNode>, Job)> lba_func;
 typedef std::vector<ServiceNode> node_list;
 typedef int lba_alg;
+
+// struct to collect all node stats in one
+typedef struct NodeStats {
+  int nNodes;
+  double avgUtil;
+  double avgQueue;
+  double avgJobs;
+  double avgDelay;
+} NodeStats;
 
 // GLOBAL VARIABLES
 const int DAY_SEC{24 * 60 * 60};   // seconds in a day
@@ -27,6 +36,9 @@ const double END{(double)DAY_SEC * 30};  // end time for the simulation
 enum class Model { mqms, sqms };         // model enums
 std::string alg{""};
 
+double SERV_MEAN{0.0};
+double IA_AVG{0.0};
+
 // NOTE: surely there must be a better way to deal with the below
 const struct algs_t {
   const lba_alg rr{0};
@@ -34,6 +46,7 @@ const struct algs_t {
   const lba_alg util{2};
   const lba_alg cxns{3};
 } Algs;
+
 // this is a list that should be able to be indexed using the enumerator
 const std::vector<lba_func> LBA_FUNCTIONS = {
     lba::roundrobin, lba::random, lba::utilizationbased, lba::leastconnections};
@@ -74,22 +87,28 @@ void serverDistribution(int nNodes, int nJobs);
 void log_sim(std::string alg, int nNodes, int qSize, int nJobs,
              node_list nodes);
 void printStats(node_list nodes, int totalRejects, int nJobs);
+void printAvgStats(NodeStats stats, double rejectRatio);
 
 int main(int argc, char* argv[]) {
   // get command line arguments
-  if (argc < 5) {
+  if (argc < 6) {
     std::cout << "Usage: " << argv[0] << " ";
-    std::cout << "<nNodes> <lba_alg> <qSize> <nJobs> <seed>" << std::endl;
+    std::cout << "<interarrival avg> <service mean> <lab_alg> <seed> <model>"
+              << std::endl;
     return 1;
   }
 
-  int nNodes{atoi(argv[1])};  // set the number of nodes
+  // set up the passed cli
+  IA_AVG = std::strtod(argv[1], 0);
+  SERV_MEAN = std::strtod(argv[2], 0);
+
+  int nNodes{100};  // set the number of nodes
 
   // set the seed (check that seed was given)
   long int seed{argc < 6 ? 123456789 : atol(argv[5])};
 
   // pick the user's LBA
-  lba_alg lbaChoice{name_to_index(argv[2])};
+  lba_alg lbaChoice{name_to_index(argv[3])};
   if (lbaChoice < 0 || lbaChoice > (int)LBA_FUNCTIONS.size()) {
     std::cerr << "Invalid load balancing algorithm: " << argv[2] << std::endl;
     std::cerr << "Possible choices are: ";
@@ -97,25 +116,33 @@ int main(int argc, char* argv[]) {
     std::cout << std::endl;
     return 1;
   }
-  int qSize{atoi(argv[3])};
-  int nJobs{atoi(argv[4])};
+  int qSize{100};
+  int nJobs{100000};
 
   PutSeed(seed);  // seed the RNG
 
   // testing mqms simulation
-  mqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
+  if (std::string(argv[5]) == "mqms")
+    mqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
 
   // testing sqms simulation
-  sqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
+  if (std::string(argv[5]) == "sqms")
+    sqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
 }
 
 // get a service time for a job
-double getArrival() {
+// ia == interarrival
+double getArrival(double ia) {
   static double prevArr{START};     // the previous arrival time
-  double st{Uniform(0, HOUR_SEC)};  // choose an arrival time
+  double st{Uniform(0, (ia * 2))};  // choose an arrival time
   prevArr += st;                    // update the the
 
   return prevArr;
+}
+
+double getService(double m) {
+  // get an exponential random variate in seconds
+  return Exponential(m);
 }
 
 /**
@@ -146,9 +173,9 @@ node_list buildNodeList(int nNodes, size_t qSz) {
  * @param lba The load-balancing algorithm to use to choose a node
  * @return int The index of the node to send a job to
  */
-int dispatcher(node_list nodes, lba_func alg, double currT) {
+int dispatcher(node_list nodes, lba_func alg, Job job) {
   int nodeIdx{-1};              // -1 as no node will have this index
-  nodeIdx = alg(nodes, currT);  // pick a node using the LBA
+  nodeIdx = alg(nodes, job);  // pick a node using the LBA
 
   return nodeIdx;
 }
@@ -181,15 +208,6 @@ void log_sim(std::string alg, int nNodes, int qSize, int nJobs,
   logfile.close();
 }
 
-// struct to collect all node stats in one
-typedef struct NodeStats {
-  int nNodes;
-  double avgUtil;
-  double avgQueue;
-  double avgJobs;
-  double avgDelay;
-};
-
 NodeStats avgStats(node_list nodes) {
   struct NodeStats stats = {static_cast<int>(nodes.size()), 0.0, 0.0, 0.0, 0.0};
 
@@ -206,6 +224,8 @@ NodeStats avgStats(node_list nodes) {
   stats.avgQueue /= numNodes;
   stats.avgJobs /= numNodes;
   stats.avgDelay /= numNodes;
+
+  return stats;
 }
 
 /**
@@ -233,10 +253,10 @@ void mqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   // run for the number of jobs
   for (int ii = 0; ii < nJobs; ii++) {
     // get the next jobs arrival
-    Job job{getArrival()};
+    Job job(getArrival(IA_AVG), getService(SERV_MEAN));
 
     // determine receiving server based on lba
-    int receiver{dispatcher(nodes, alg, job.getArrival())};
+    int receiver{dispatcher(nodes, alg, job)};
     // std::cout << "Node " << receiver << " selected for job" << std::endl;
 
     // attempt to enter the job into the node
@@ -276,19 +296,16 @@ void sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   // build node list
   node_list nodes{buildNodeList(nNodes, 0)};
 
-  // list of departure times for jobs in the node
-  std::vector<double> departures(nNodes);
-
-  int totalRejects{0};  // the total number of rejections
-  int tot_q_len{0};     // total queue length
+  int totalRejects{0};     // the total number of rejections
+  double totalDelay{0.0};  // total queue length
 
   // the dispatcher's queue
   std::queue<Job> jobQueue;
 
   // run for the number of jobs
   for (int ii = 0; ii < nJobs; ii++) {
-    Job job{getArrival()};  // get a job's arrival time
-    double departureTime{job.getArrival()};
+    Job job(getArrival(IA_AVG), getService(SERV_MEAN));
+    double delay{job.getArrival()};
 
     // check to make sure the job can be queued
     if (jobQueue.size() < qSize) {
@@ -298,16 +315,20 @@ void sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
     }
 
     // pick the service node to send the current job to
-    int receiver{dispatcher(nodes, alg, job.getArrival())};
+    int receiver{dispatcher(nodes, alg, job)};
 
     // send the job to the selected node
     if (nodes[receiver].enterNode(job)) {
+      double tempArr{jobQueue.front().getArrival()};
+      totalDelay += (delay - tempArr);  // add to the total delay in queue
+
       jobQueue.pop();  // remove the job from the queue as it can be serviced
     }
   }
 
   double rejectRatio{static_cast<double>(totalRejects) / nJobs};
   NodeStats stats{avgStats(nodes)};
+  stats.avgDelay = totalDelay / (nJobs - totalRejects);
   printAvgStats(stats, rejectRatio);
 }
 
@@ -349,9 +370,9 @@ void serverDistribution(int nNodes, int nJobs) {
 
   for (lba_func alg : funcs) {
     for (int i = 0; i < nJobs - 1; i++) {
-      lba_dat << alg(nodes, 0 /*lbas depend on dynamic state*/) << ",";
+      lba_dat << alg(nodes, Job(0,0)) << ",";
     }
-    lba_dat << alg(nodes, 0 /*lbas depend on dynamic state*/) << std::endl;
+    lba_dat << alg(nodes, Job(0,0)) << std::endl;
   }
 
   lba_dat.close();
