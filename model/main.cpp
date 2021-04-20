@@ -102,10 +102,10 @@ int main(int argc, char* argv[]) {
   IA_AVG = std::strtod(argv[1], 0);
   SERV_MEAN = std::strtod(argv[2], 0);
 
-  int nNodes{100};  // set the number of nodes
+  int nNodes{10};  // set the number of nodes
 
   // set the seed (check that seed was given)
-  long int seed{argc < 6 ? 123456789 : atol(argv[5])};
+  long int seed{argc < 6 ? 123456789 : atol(argv[4])};
 
   // pick the user's LBA
   lba_alg lbaChoice{name_to_index(argv[3])};
@@ -120,6 +120,8 @@ int main(int argc, char* argv[]) {
   int nJobs{100000};
 
   PutSeed(seed);  // seed the RNG
+
+  std::cout << "running " << argv[5] << std::endl;
 
   // testing mqms simulation
   if (std::string(argv[5]) == "mqms")
