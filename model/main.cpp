@@ -88,7 +88,6 @@ int main(int argc, char* argv[]) {
   // set the seed (check that seed was given)
   long int seed{argc < 6 ? 123456789 : atol(argv[5])};
 
-
   // pick the user's LBA
   lba_alg lbaChoice{name_to_index(argv[2])};
   if (lbaChoice < 0 || lbaChoice > (int)LBA_FUNCTIONS.size()) {
@@ -100,20 +99,13 @@ int main(int argc, char* argv[]) {
   }
   int qSize{atoi(argv[3])};
   int nJobs{atoi(argv[4])};
-  std::cout << "Running simulation with: " << nNodes << " Nodes, " << argv[2]
-            << " Algorithm, " << qSize << " Queue length, " << nJobs
-            << " Jobs, " << seed << " Seed." << std::endl;
 
   PutSeed(seed);  // seed the RNG
 
   // testing mqms simulation
-  std::cout << "-------------------------------------------------" << std::endl;
-  std::cout << "MQMS SIMULATION:" << std::endl;
   mqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
-  
+
   // testing sqms simulation
-  std::cout << "-------------------------------------------------" << std::endl;
-  std::cout << "SQMS SIMULATION:" << std::endl;
   sqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
 }
 
@@ -189,6 +181,33 @@ void log_sim(std::string alg, int nNodes, int qSize, int nJobs,
   logfile.close();
 }
 
+// struct to collect all node stats in one
+typedef struct NodeStats {
+  int nNodes;
+  double avgUtil;
+  double avgQueue;
+  double avgJobs;
+  double avgDelay;
+};
+
+NodeStats avgStats(node_list nodes) {
+  struct NodeStats stats = {static_cast<int>(nodes.size()), 0.0, 0.0, 0.0, 0.0};
+
+  // gather sums for all the results
+  for (ServiceNode node : nodes) {
+    stats.avgUtil += node.getUtil();
+    stats.avgQueue += node.calcAvgQueue();
+    stats.avgJobs += node.getNumProcJobs();
+    stats.avgDelay += node.calcAvgDelay();
+  }
+
+  size_t numNodes{nodes.size()};
+  stats.avgUtil /= numNodes;
+  stats.avgQueue /= numNodes;
+  stats.avgJobs /= numNodes;
+  stats.avgDelay /= numNodes;
+}
+
 /**
  * @brief Run a multi-queue, multi-server simulation
  *
@@ -233,13 +252,9 @@ void mqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
     }
   }
 
-  // get simulation results
-  printStats(nodes, totalRejects, nJobs);
-
-  // TODO: make this dependent on CLI flag
-  // also, need better way to get alg name
-  accumStats(nodes, nJobs, Model::mqms, funcName);
-  log_sim(funcName, nNodes, qSize, nJobs, nodes);
+  double rejectRatio{static_cast<double>(totalRejects) / nJobs};
+  NodeStats stats{avgStats(nodes)};
+  printAvgStats(stats, rejectRatio);
 }
 
 /**
@@ -261,8 +276,11 @@ void sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   // build node list
   node_list nodes{buildNodeList(nNodes, 0)};
 
-  // the total number of rejections
-  int totalRejects{0};
+  // list of departure times for jobs in the node
+  std::vector<double> departures(nNodes);
+
+  int totalRejects{0};  // the total number of rejections
+  int tot_q_len{0};     // total queue length
 
   // the dispatcher's queue
   std::queue<Job> jobQueue;
@@ -270,6 +288,7 @@ void sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   // run for the number of jobs
   for (int ii = 0; ii < nJobs; ii++) {
     Job job{getArrival()};  // get a job's arrival time
+    double departureTime{job.getArrival()};
 
     // check to make sure the job can be queued
     if (jobQueue.size() < qSize) {
@@ -287,11 +306,15 @@ void sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
     }
   }
 
-  // get simulation results
-  printStats(nodes, totalRejects, nJobs);
+  double rejectRatio{static_cast<double>(totalRejects) / nJobs};
+  NodeStats stats{avgStats(nodes)};
+  printAvgStats(stats, rejectRatio);
+}
 
-  accumStats(nodes, nJobs, Model::sqms, funcName);
-  log_sim(funcName, nNodes, 0, nJobs, nodes);
+void printAvgStats(NodeStats stats, double rejectRatio) {
+  std::cout << stats.nNodes << "," << stats.avgUtil << "," << stats.avgQueue
+            << "," << stats.avgJobs << "," << stats.avgDelay << ","
+            << rejectRatio << std::endl;
 }
 
 void printStats(node_list nodes, int totalRejects, int nJobs) {
@@ -299,14 +322,13 @@ void printStats(node_list nodes, int totalRejects, int nJobs) {
   double rejectRatio{(static_cast<double>(totalRejects) / nJobs) * 100};
 
   // print the reject amount
-  std::cout << std::setprecision(5) 
-            << "Rejection amount: " << rejectRatio  << "%" << std::endl;
-  
+  std::cout << std::setprecision(5) << "Rejection amount: " << rejectRatio
+            << "%" << std::endl;
+
   // print the node-wise data
   for (ServiceNode node : nodes) {
     std::cout << node << std::endl;
   }
-
 }
 
 /**
