@@ -4,12 +4,13 @@
 
 const long int SERVICE_MEAN{4049};
 
-Job::Job(double arrival) : arrival{arrival}, delay{0}, service{getService()} {
+Job::Job(double arrival, double serviceTime)
+    : arrival{arrival}, delay{0}, service{serviceTime} {
   // service needs to be generated via GetService
 }
 
-Job::Job(double arrival, double prevDeparture)
-    : arrival{arrival}, delay{setDelay(prevDeparture)}, service{getService()} {
+Job::Job(double arrival, double serviceTime, double prevDeparture)
+    : arrival{arrival}, delay{setDelay(prevDeparture)}, service{serviceTime} {
   // service needs to be generated via GetService
 }
 

@@ -12,7 +12,7 @@ class Job {
    *
    * @param arrival The time when a job arrives
    */
-  Job(double arrival);
+  Job(double arrival, double serviceTime);
 
   /**
    * @brief Construct a new Job object
@@ -24,7 +24,7 @@ class Job {
    * @param arrival The time when a job arrives.
    * @param prevDeparture The previous Job's departure time.
    */
-  Job(double arrival, double prevDeparture);
+  Job(double arrival, double serviceTime, double prevDeparture);
 
   /**
    * @brief Set the Delay object
