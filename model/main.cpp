@@ -25,6 +25,8 @@ typedef struct NodeStats {
   double avgQueue;
   double avgJobs;
   double avgDelay;
+  double avgWait;
+  double avgThruput;
 } NodeStats;
 
 // GLOBAL VARIABLES
@@ -88,6 +90,7 @@ void log_sim(std::string alg, int nNodes, int qSize, int nJobs,
              node_list nodes);
 void printStats(node_list nodes, int totalRejects, int nJobs);
 void printAvgStats(NodeStats stats, double rejectRatio);
+NodeStats avgStats(node_list nodes);
 
 int main(int argc, char* argv[]) {
   // get command line arguments
@@ -176,7 +179,7 @@ node_list buildNodeList(int nNodes, size_t qSz) {
  * @return int The index of the node to send a job to
  */
 int dispatcher(node_list nodes, lba_func alg, Job job) {
-  int nodeIdx{-1};              // -1 as no node will have this index
+  int nodeIdx{-1};            // -1 as no node will have this index
   nodeIdx = alg(nodes, job);  // pick a node using the LBA
 
   return nodeIdx;
@@ -215,10 +218,13 @@ NodeStats avgStats(node_list nodes) {
 
   // gather sums for all the results
   for (ServiceNode node : nodes) {
+    double tempDelay{node.calcAvgDelay()};
     stats.avgUtil += node.getUtil();
     stats.avgQueue += node.calcAvgQueue();
     stats.avgJobs += node.getNumProcJobs();
-    stats.avgDelay += node.calcAvgDelay();
+    stats.avgDelay += tempDelay;
+    stats.avgWait += node.calcAvgSt() + tempDelay;
+    stats.avgThruput += node.getTput();
   }
 
   size_t numNodes{nodes.size()};
@@ -226,6 +232,8 @@ NodeStats avgStats(node_list nodes) {
   stats.avgQueue /= numNodes;
   stats.avgJobs /= numNodes;
   stats.avgDelay /= numNodes;
+  stats.avgWait /= numNodes;
+  stats.avgThruput /= numNodes;
 
   return stats;
 }
@@ -298,8 +306,10 @@ void sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   // build node list
   node_list nodes{buildNodeList(nNodes, 0)};
 
-  int totalRejects{0};     // the total number of rejections
-  double totalDelay{0.0};  // total queue length
+  int totalRejects{0};        // the total number of rejections
+  double totalDelay{0.0};     // total queue length
+  double totalServ{0.0};      // total service times
+  double lastDeparture{0.0};  // last job's departure
 
   // the dispatcher's queue
   std::queue<Job> jobQueue;
@@ -322,22 +332,35 @@ void sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
     // send the job to the selected node
     if (nodes[receiver].enterNode(job)) {
       double tempArr{jobQueue.front().getArrival()};
-      totalDelay += (delay - tempArr);  // add to the total delay in queue
+      totalDelay += (delay - tempArr);    // add to the total delay in queue
+      totalServ += job.getServiceTime();  // add this st
+      lastDeparture = job.calcDeparture();
 
       jobQueue.pop();  // remove the job from the queue as it can be serviced
     }
   }
 
+  // calculate the reject ratio
   double rejectRatio{static_cast<double>(totalRejects) / nJobs};
+
+  // get the system stats
   NodeStats stats{avgStats(nodes)};
-  stats.avgDelay = totalDelay / (nJobs - totalRejects);
+  int processedJobs{nJobs - totalRejects};  // number of processed jobs.
+
+  // calculate the delay and wait for sqms on outside queue
+  stats.avgDelay = totalDelay / processedJobs;
+  stats.avgWait = stats.avgDelay + (totalServ / processedJobs);
+  stats.avgThruput = processedJobs / lastDeparture;
+
   printAvgStats(stats, rejectRatio);
 }
 
 void printAvgStats(NodeStats stats, double rejectRatio) {
+  // order: nNodes, util, q, jobs, delay, wait, reject
   std::cout << stats.nNodes << "," << stats.avgUtil << "," << stats.avgQueue
             << "," << stats.avgJobs << "," << stats.avgDelay << ","
-            << rejectRatio << std::endl;
+            << stats.avgWait << "," << stats.avgThruput << "," << rejectRatio
+            << std::endl;
 }
 
 void printStats(node_list nodes, int totalRejects, int nJobs) {
@@ -372,9 +395,9 @@ void serverDistribution(int nNodes, int nJobs) {
 
   for (lba_func alg : funcs) {
     for (int i = 0; i < nJobs - 1; i++) {
-      lba_dat << alg(nodes, Job(0,0)) << ",";
+      lba_dat << alg(nodes, Job(0, 0)) << ",";
     }
-    lba_dat << alg(nodes, Job(0,0)) << std::endl;
+    lba_dat << alg(nodes, Job(0, 0)) << std::endl;
   }
 
   lba_dat.close();
