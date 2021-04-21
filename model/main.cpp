@@ -27,6 +27,7 @@ typedef struct NodeStats {
   double avgDelay;
   double avgWait;
   double avgThruput;
+  double reject;
 } NodeStats;
 
 // GLOBAL VARIABLES
@@ -81,16 +82,42 @@ void log_sim(lba_func lba, int nNodes, int qSize, int nJobs, node_list nodes);
 /* TO-DO:
  * Implement the function declartions below this list....
  */
-void sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs);
-void mqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs);
+NodeStats sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs);
+NodeStats mqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs);
 void accumStats(node_list nodes, int nJobs, Model modelName,
                 std::string funcName);
 void serverDistribution(int nNodes, int nJobs);
 void log_sim(std::string alg, int nNodes, int qSize, int nJobs,
              node_list nodes);
 void printStats(node_list nodes, int totalRejects, int nJobs);
-void printAvgStats(NodeStats stats, double rejectRatio);
+void printAvgStats(NodeStats stats);
 NodeStats avgStats(node_list nodes);
+
+NodeStats sumStats(NodeStats src, NodeStats dst) {
+  dst.avgDelay += src.avgDelay;
+  dst.avgJobs += src.avgJobs;
+  dst.avgQueue += src.avgQueue;
+  dst.avgThruput += src.avgThruput;
+  dst.avgUtil += src.avgUtil;
+  dst.avgWait += src.avgWait;
+  dst.nNodes += src.nNodes;
+  dst.reject += src.reject;
+
+  return dst;
+}
+
+NodeStats avgStatStats(NodeStats sts, int nStatSets) {
+  sts.avgDelay /= nStatSets;
+  sts.avgJobs /= nStatSets;
+  sts.avgQueue /= nStatSets;
+  sts.avgThruput /= nStatSets;
+  sts.avgUtil /= nStatSets;
+  sts.avgWait /= nStatSets;
+  sts.nNodes /= nStatSets;
+  sts.reject /= nStatSets;
+
+  return sts;
+}
 
 int main(int argc, char* argv[]) {
   // get command line arguments
@@ -119,20 +146,32 @@ int main(int argc, char* argv[]) {
     std::cout << std::endl;
     return 1;
   }
+
   int qSize{100};
   int nJobs{100000};
+  long int seeds[3] = {12345, 56789, 87654321};
+  struct NodeStats stats = {0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
-  PutSeed(seed);  // seed the RNG
 
-  std::cout << "running " << argv[5] << std::endl;
+  // test using a new seed each time
+  for (int i = 0; i < 3; i++) {
+    PutSeed(seeds[i]);  // seed the RNG
 
-  // testing mqms simulation
-  if (std::string(argv[5]) == "mqms")
-    mqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
+    // testing mqms simulation
+    if (std::string(argv[5]) == "mqms") {
+      NodeStats tempStats = mqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
+      stats = sumStats(tempStats, stats);
+    }
 
-  // testing sqms simulation
-  if (std::string(argv[5]) == "sqms")
-    sqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
+    // testing sqms simulation
+    if (std::string(argv[5]) == "sqms") {
+      NodeStats tempStats = sqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
+      stats = sumStats(tempStats, stats);
+    }
+  }
+
+   stats = avgStatStats(stats, 3);
+  printAvgStats(stats);
 }
 
 // get a service time for a job
@@ -214,28 +253,29 @@ void log_sim(std::string alg, int nNodes, int qSize, int nJobs,
 }
 
 NodeStats avgStats(node_list nodes) {
-  struct NodeStats stats = {static_cast<int>(nodes.size()), 0.0, 0.0, 0.0, 0.0};
+  struct NodeStats tempStats = {0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  tempStats.nNodes = nodes.size();
 
   // gather sums for all the results
   for (ServiceNode node : nodes) {
     double tempDelay{node.calcAvgDelay()};
-    stats.avgUtil += node.getUtil();
-    stats.avgQueue += node.calcAvgQueue();
-    stats.avgJobs += node.getNumProcJobs();
-    stats.avgDelay += tempDelay;
-    stats.avgWait += node.calcAvgSt() + tempDelay;
-    stats.avgThruput += node.getTput();
+    tempStats.avgUtil += node.getUtil();
+    tempStats.avgQueue += node.calcAvgQueue();
+    tempStats.avgJobs += node.getNumProcJobs();
+    tempStats.avgDelay += tempDelay;
+    tempStats.avgWait += node.calcAvgSt() + tempDelay;
+    tempStats.avgThruput += node.getTput();
   }
 
   size_t numNodes{nodes.size()};
-  stats.avgUtil /= numNodes;
-  stats.avgQueue /= numNodes;
-  stats.avgJobs /= numNodes;
-  stats.avgDelay /= numNodes;
-  stats.avgWait /= numNodes;
-  stats.avgThruput /= numNodes;
+  tempStats.avgUtil /= numNodes;
+  tempStats.avgQueue /= numNodes;
+  tempStats.avgJobs /= numNodes;
+  tempStats.avgDelay /= numNodes;
+  tempStats.avgWait /= numNodes;
+  tempStats.avgThruput /= numNodes;
 
-  return stats;
+  return tempStats;
 }
 
 /**
@@ -249,7 +289,7 @@ NodeStats avgStats(node_list nodes) {
  * @param lba The node balancing
  * @param nJobs The number of jobs to "process" in the simulation
  */
-void mqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
+NodeStats mqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   // select the algorithm besing used
   lba_func alg{LBA_FUNCTIONS[lba]};
   std::string funcName{LBA_NAMES[lba]};
@@ -283,8 +323,10 @@ void mqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   }
 
   double rejectRatio{static_cast<double>(totalRejects) / nJobs};
-  NodeStats stats{avgStats(nodes)};
-  printAvgStats(stats, rejectRatio);
+  NodeStats mqmsStats{avgStats(nodes)};
+  mqmsStats.reject = rejectRatio;
+
+  return mqmsStats;
 }
 
 /**
@@ -298,7 +340,7 @@ void mqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
  * @param qSize The size of the dispatcher's queue
  * @param nJobs The number of jobs to "process" in the simulation
  */
-void sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
+NodeStats sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   // select the algorithm besing used
   lba_func alg{LBA_FUNCTIONS[lba]};
   std::string funcName{LBA_NAMES[lba]};
@@ -344,23 +386,25 @@ void sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   double rejectRatio{static_cast<double>(totalRejects) / nJobs};
 
   // get the system stats
-  NodeStats stats{avgStats(nodes)};
+  NodeStats sqmsStats{avgStats(nodes)};
   int processedJobs{nJobs - totalRejects};  // number of processed jobs.
 
   // calculate the delay and wait for sqms on outside queue
-  stats.avgDelay = totalDelay / processedJobs;
-  stats.avgWait = stats.avgDelay + (totalServ / processedJobs);
-  stats.avgThruput = processedJobs / lastDeparture;
+  sqmsStats.avgDelay = totalDelay / processedJobs;
+  sqmsStats.avgWait = sqmsStats.avgDelay + (totalServ / processedJobs);
+  sqmsStats.avgThruput = processedJobs / lastDeparture;
+  sqmsStats.avgQueue = (processedJobs / lastDeparture) * sqmsStats.avgDelay;
+  sqmsStats.reject = rejectRatio;
 
-  printAvgStats(stats, rejectRatio);
+  return sqmsStats;
 }
 
-void printAvgStats(NodeStats stats, double rejectRatio) {
+void printAvgStats(NodeStats statistics) {
   // order: nNodes, util, q, jobs, delay, wait, reject
-  std::cout << stats.nNodes << "," << stats.avgUtil << "," << stats.avgQueue
-            << "," << stats.avgJobs << "," << stats.avgDelay << ","
-            << stats.avgWait << "," << stats.avgThruput << "," << rejectRatio
-            << std::endl;
+  std::cout << statistics.nNodes << "," << statistics.avgUtil << ","
+            << statistics.avgQueue << "," << statistics.avgJobs << ","
+            << statistics.avgDelay << "," << statistics.avgWait << ","
+            << statistics.avgThruput << "," << statistics.reject << std::endl;
 }
 
 void printStats(node_list nodes, int totalRejects, int nJobs) {
