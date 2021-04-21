@@ -27,6 +27,7 @@ typedef struct NodeStats {
   double avgDelay;
   double avgWait;
   double avgThruput;
+  double avgSt;
 } NodeStats;
 
 // GLOBAL VARIABLES
@@ -77,7 +78,7 @@ double getArrival();
 node_list buildNodeList(int nNodes, size_t qSz);
 node_idx dispatcher(node_list nodes, lba_func lba);
 void log_sim(lba_func lba, int nNodes, int qSize, int nJobs, node_list nodes);
-bool consistencyCheck(node_list nodes);
+bool consistencyCheck(NodeStats stats);
 
 /* TO-DO:
  * Implement the function declartions below this list....
@@ -226,6 +227,7 @@ NodeStats avgStats(node_list nodes) {
     stats.avgDelay += tempDelay;
     stats.avgWait += node.calcAvgSt() + tempDelay;
     stats.avgThruput += node.getTput();
+    stats.avgSt += node.calcAvgSt();
   }
 
   size_t numNodes{nodes.size()};
@@ -235,6 +237,7 @@ NodeStats avgStats(node_list nodes) {
   stats.avgDelay /= numNodes;
   stats.avgWait /= numNodes;
   stats.avgThruput /= numNodes;
+  stats.avgSt /= numNodes;
 
   return stats;
 }
@@ -282,11 +285,11 @@ void mqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
       ++totalRejects;
     }
   }
-  bool consistent{consistencyCheck(nodes)};
 
   double rejectRatio{static_cast<double>(totalRejects) / nJobs};
   NodeStats stats{avgStats(nodes)};
   printAvgStats(stats, rejectRatio);
+  bool consistent{consistencyCheck(stats)};
 }
 
 /**
@@ -341,7 +344,6 @@ void sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
       jobQueue.pop();  // remove the job from the queue as it can be serviced
     }
   }
-  bool consistent{consistencyCheck(nodes)};
 
   // calculate the reject ratio
   double rejectRatio{static_cast<double>(totalRejects) / nJobs};
@@ -356,6 +358,7 @@ void sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   stats.avgThruput = processedJobs / lastDeparture;
 
   printAvgStats(stats, rejectRatio);
+  bool consistent{consistencyCheck(stats)};
 }
 
 void printAvgStats(NodeStats stats, double rejectRatio) {
@@ -431,15 +434,16 @@ void accumStats(node_list nodes, int nJobs, Model modelName,
 }
 
 
-bool consistencyCheck(node_list nodes) {
-    for (auto node : nodes) {
-        if (!node.checkConsistency()) {
-            std::cout << "Node " << node.getId() << " is not consistent" << std::endl;
-            std::cout << "avgWait: " << node.getLatency() << std::endl;
-            std::cout << "avgDelay: " << node.calcAvgDelay() << std::endl;
-            std::cout << "avgService: " << node.calcAvgSt() << std::endl;
-            return false;
-        }
+bool consistencyCheck(NodeStats stats) {
+    const double e = 1e-5; // prob. shouldn't compare floats directly
+    double expectedWait{stats.avgDelay + stats.avgSt};
+    double distance{std::abs(expectedWait - stats.avgWait)};
+    if (distance > e) {
+        std::cout << "sim is not consistent" << std::endl;
+        std::cout << "avgWait: " << stats.avgWait << std::endl;
+        std::cout << "avgDelay: " << stats.avgDelay << std::endl;
+        std::cout << "avgService: " << stats.avgSt << std::endl;
+        return false;
     }
     return true;
 }
