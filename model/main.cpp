@@ -78,7 +78,7 @@ double getArrival();
 node_list buildNodeList(int nNodes, size_t qSz);
 node_idx dispatcher(node_list nodes, lba_func lba);
 void log_sim(lba_func lba, int nNodes, int qSize, int nJobs, node_list nodes);
-bool consistencyCheck(NodeStats stats);
+void consistencyCheck(NodeStats stats);
 
 /* TO-DO:
  * Implement the function declartions below this list....
@@ -289,7 +289,7 @@ void mqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   double rejectRatio{static_cast<double>(totalRejects) / nJobs};
   NodeStats stats{avgStats(nodes)};
   printAvgStats(stats, rejectRatio);
-  bool consistent{consistencyCheck(stats)};
+  consistencyCheck(stats);
 }
 
 /**
@@ -358,7 +358,7 @@ void sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   stats.avgThruput = processedJobs / lastDeparture;
 
   printAvgStats(stats, rejectRatio);
-  bool consistent{consistencyCheck(stats)};
+  consistencyCheck(stats);
 }
 
 void printAvgStats(NodeStats stats, double rejectRatio) {
@@ -434,7 +434,7 @@ void accumStats(node_list nodes, int nJobs, Model modelName,
 }
 
 
-bool consistencyCheck(NodeStats stats) {
+void consistencyCheck(NodeStats stats) {
     const double e = 1e-5; // prob. shouldn't compare floats directly
     double expectedWait{stats.avgDelay + stats.avgSt};
     double distance{std::abs(expectedWait - stats.avgWait)};
@@ -443,7 +443,5 @@ bool consistencyCheck(NodeStats stats) {
         std::cout << "avgWait: " << stats.avgWait << std::endl;
         std::cout << "avgDelay: " << stats.avgDelay << std::endl;
         std::cout << "avgService: " << stats.avgSt << std::endl;
-        return false;
     }
-    return true;
 }
