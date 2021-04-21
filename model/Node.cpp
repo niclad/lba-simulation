@@ -70,12 +70,13 @@ bool ServiceNode::enterNode(Job job) {
   isEnter |= (jobQueue.size() == 0);
   // job can enter, so update stats
   if (isEnter) {
-    ++numJobsProcessed;                 // this Job can be processed
-    updateTotST(job.getServiceTime());  // increase the total ST
-    updateUtil(job.calcDeparture());    // update utilization
-    totDelay += job.getDelay();         // update the delay.
     // update the last Job's departure time
     lastDeparture = job.calcDeparture();
+    ++numJobsProcessed;                 // this Job can be processed
+    updateTotST(job.getServiceTime());  // increase the total ST
+    updateUtil(lastDeparture);          // update utilization
+    totDelay += job.getDelay();         // update the delay.
+    updateTput();                       // update the throughput
 
     // if the queue is empty, this job will depart first
     if (jobQueue.size() == 0) {
@@ -155,13 +156,9 @@ double ServiceNode::calcAvgDelay() const { return totDelay / numJobsProcessed; }
 
 int ServiceNode::getMaxQueueLen() const { return maxQueueSz; }
 
-void ServiceNode::updateTput() {
-  thruput = numJobsProcessed / lastDeparture;
-};
+void ServiceNode::updateTput() { thruput = numJobsProcessed / lastDeparture; };
 
-double ServiceNode::getTput() const {
-  return thruput;
-}
+double ServiceNode::getTput() const { return thruput; }
 
 std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
   // choose to print the delay and queue length.
