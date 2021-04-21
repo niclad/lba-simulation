@@ -161,6 +161,13 @@ class ServiceNode {
 
   double getTput() const;
 
+  /**
+   * @brief Checks consistency of this node
+   *
+   * @return bool True if the node is consistent
+   */
+  bool checkConsistency() const;
+
  private:
   /**
    * @brief Calculate the average service time

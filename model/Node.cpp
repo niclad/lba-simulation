@@ -181,3 +181,8 @@ std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
 
   return out;
 }
+
+bool ServiceNode::checkConsistency() const {
+    double avgWait{calcAvgWait
+    double avgDelay{calcAvgDelay()};
+}
