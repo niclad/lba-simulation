@@ -77,6 +77,7 @@ double getArrival();
 node_list buildNodeList(int nNodes, size_t qSz);
 node_idx dispatcher(node_list nodes, lba_func lba);
 void log_sim(lba_func lba, int nNodes, int qSize, int nJobs, node_list nodes);
+bool consistencyCheck(node_list nodes);
 
 /* TO-DO:
  * Implement the function declartions below this list....
@@ -281,6 +282,7 @@ void mqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
       ++totalRejects;
     }
   }
+  bool consistent{consistencyCheck(nodes)};
 
   double rejectRatio{static_cast<double>(totalRejects) / nJobs};
   NodeStats stats{avgStats(nodes)};
@@ -339,6 +341,7 @@ void sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
       jobQueue.pop();  // remove the job from the queue as it can be serviced
     }
   }
+  bool consistent{consistencyCheck(nodes)};
 
   // calculate the reject ratio
   double rejectRatio{static_cast<double>(totalRejects) / nJobs};
@@ -425,4 +428,18 @@ void accumStats(node_list nodes, int nJobs, Model modelName,
   }
 
   data.close();
+}
+
+
+bool consistencyCheck(node_list nodes) {
+    for (auto node : nodes) {
+        if (!node.checkConsistency()) {
+            std::cout << "Node " << node.getId() << " is not consistent" << std::endl;
+            std::cout << "avgWait: " << node.getLatency() << std::endl;
+            std::cout << "avgDelay: " << node.calcAvgDelay() << std::endl;
+            std::cout << "avgService: " << node.calcAvgSt() << std::endl;
+            return false;
+        }
+    }
+    return true;
 }

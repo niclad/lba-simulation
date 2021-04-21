@@ -166,7 +166,7 @@ class ServiceNode {
    *
    * @return bool True if the node is consistent
    */
-  bool checkConsistency() const;
+  bool checkConsistency();
 
  private:
   /**

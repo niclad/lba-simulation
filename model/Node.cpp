@@ -1,6 +1,7 @@
 #include "Node.h"
 
 #include <iomanip>
+#include <cmath>
 
 #include "Job.h"
 
@@ -182,7 +183,16 @@ std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
   return out;
 }
 
-bool ServiceNode::checkConsistency() const {
-    double avgWait{calcAvgWait
+bool ServiceNode::checkConsistency() {
+    double avgWait{getLatency()};
     double avgDelay{calcAvgDelay()};
+    double avgService{calcAvgSt()};
+    double expectedWait{avgDelay + avgService};
+
+    const double e = 1e-5; // can't compare floats directly for ==
+    if (std::abs(avgWait - expectedWait) > e) {
+        return false;
+    }
+
+    return true;
 }
