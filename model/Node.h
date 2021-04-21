@@ -153,6 +153,14 @@ class ServiceNode {
    */
   int getMaxQueueLen() const;
 
+  void updateLatency();
+
+  double getLatency();
+
+  void updateTput();
+
+  double getTput() const;
+
  private:
   /**
    * @brief Calculate the average service time
@@ -196,6 +204,12 @@ class ServiceNode {
 
   // the total delay for all the jobs processed
   mutable double totDelay;
+
+  // the latency of the node
+  double latency;
+
+  // the throughput of node
+  double thruput;
 };
 
 // overload the << operator

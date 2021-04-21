@@ -11,7 +11,9 @@ ServiceNode::ServiceNode(int id)
       totST{0},
       numJobsProcessed{0},
       lastDeparture{0.0},
-      totDelay{0.0} {}
+      totDelay{0.0},
+      latency{0.0},
+      thruput{0.0} {}
 
 ServiceNode::ServiceNode(int id, size_t maxQueueSz)
     : id{id},
@@ -20,7 +22,9 @@ ServiceNode::ServiceNode(int id, size_t maxQueueSz)
       totST{0},
       numJobsProcessed{0},
       lastDeparture{0.0},
-      totDelay{0.0} {}
+      totDelay{0.0},
+      latency{0.0},
+      thruput{0.0} {}
 
 void ServiceNode::updateUtil(double mostRecentDep) {
   util = (totST / mostRecentDep);
@@ -151,6 +155,14 @@ double ServiceNode::calcAvgDelay() const { return totDelay / numJobsProcessed; }
 
 int ServiceNode::getMaxQueueLen() const { return maxQueueSz; }
 
+void ServiceNode::updateTput() {
+  thruput = numJobsProcessed / lastDeparture;
+};
+
+double ServiceNode::getTput() const {
+  return thruput;
+}
+
 std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
   // choose to print the delay and queue length.
   if (node.getMaxQueueLen() > 0) {
@@ -160,7 +172,7 @@ std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
         << node.calcAvgSt() << ", avg_q: " << std::setw(4)
         << node.calcAvgQueue() << ", avg_d: " << std::setw(6)
         << node.calcAvgDelay();
-  } else { // don't print delay and queue len if there's no queue
+  } else {  // don't print delay and queue len if there's no queue
     out << "ID: " << std::setw(2) << node.getId() << ", util: " << std::setw(7)
         << node.getUtil() << ", njobs: " << std::setw(6)
         << node.getNumProcJobs() << ", avg_s: " << std::setw(6)
