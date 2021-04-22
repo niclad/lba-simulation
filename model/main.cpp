@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
   }
 
   int qSize{100};
-  int nJobs{100000};
+  int nJobs{10000};
   long int seeds[3] = {12345, 56789, 87654321};
   struct NodeStats stats = {0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
@@ -167,6 +167,7 @@ int main(int argc, char* argv[]) {
 
     // testing sqms simulation
     if (std::string(argv[5]) == "sqms") {
+      qSize *= nNodes; // have same queue length
       NodeStats tempStats = sqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
       stats = sumStats(tempStats, stats);
     }
@@ -268,7 +269,7 @@ NodeStats avgStats(node_list nodes) {
     tempStats.avgDelay += tempDelay;
     tempStats.avgWait += node.calcAvgSt() + tempDelay;
     tempStats.avgThruput += node.getTput();
-    stats.avgSt += node.calcAvgSt();
+    tempStats.avgSt += node.calcAvgSt();
   }
 
   size_t numNodes{nodes.size()};
@@ -278,7 +279,7 @@ NodeStats avgStats(node_list nodes) {
   tempStats.avgDelay /= numNodes;
   tempStats.avgWait /= numNodes;
   tempStats.avgThruput /= numNodes;
-  stats.avgSt /= numNodes;
+  tempStats.avgSt /= numNodes;
 
   return tempStats;
 }
@@ -330,7 +331,7 @@ NodeStats mqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   double rejectRatio{static_cast<double>(totalRejects) / nJobs};
   NodeStats mqmsStats{avgStats(nodes)};
   mqmsStats.reject = rejectRatio;
-  consistencyCheck(stats);
+  consistencyCheck(mqmsStats);
 
   return mqmsStats;
 }
@@ -401,7 +402,7 @@ NodeStats sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   sqmsStats.avgThruput = processedJobs / lastDeparture;
   sqmsStats.avgQueue = (processedJobs / lastDeparture) * sqmsStats.avgDelay;
   sqmsStats.reject = rejectRatio;
-  consistencyCheck(stats);
+  consistencyCheck(sqmsStats);
 
   return sqmsStats;
 }
