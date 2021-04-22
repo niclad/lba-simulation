@@ -92,7 +92,7 @@ void serverDistribution(int nNodes, int nJobs);
 void log_sim(std::string alg, int nNodes, int qSize, int nJobs,
              node_list nodes);
 void printStats(node_list nodes, int totalRejects, int nJobs);
-void printAvgStats(NodeStats stats);
+void printAvgStats(NodeStats statistics, double ia, double st);
 NodeStats avgStats(node_list nodes);
 
 NodeStats sumStats(NodeStats src, NodeStats dst) {
@@ -154,7 +154,6 @@ int main(int argc, char* argv[]) {
   long int seeds[3] = {12345, 56789, 87654321};
   struct NodeStats stats = {0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
-
   // test using a new seed each time
   for (int i = 0; i < 3; i++) {
     PutSeed(seeds[i]);  // seed the RNG
@@ -167,14 +166,14 @@ int main(int argc, char* argv[]) {
 
     // testing sqms simulation
     if (std::string(argv[5]) == "sqms") {
-      qSize *= nNodes; // have same queue length
+      qSize *= nNodes;  // have same queue length
       NodeStats tempStats = sqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
       stats = sumStats(tempStats, stats);
     }
   }
 
-   stats = avgStatStats(stats, 3);
-  printAvgStats(stats);
+  stats = avgStatStats(stats, 3);
+  printAvgStats(stats, IA_AVG, SERV_MEAN);
 }
 
 // get a service time for a job
@@ -368,24 +367,27 @@ NodeStats sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
     Job job(getArrival(IA_AVG), getService(SERV_MEAN));
     double delay{job.getArrival()};
 
+    // pick the service node to send the current job to
+    int receiver{dispatcher(nodes, alg, job)};
+
+    // if there's a non-empty queue, check to see if the first job can be sent
+    if (jobQueue.size() > 0) {
+      // send the job to the selected node
+      if (nodes[receiver].enterNode(job)) {
+        double tempArr{jobQueue.front().getArrival()};
+        totalDelay += (delay - tempArr);    // add to the total delay in queue
+        totalServ += job.getServiceTime();  // add this st
+        lastDeparture = job.calcDeparture();
+
+        jobQueue.pop();  // remove the job from the queue as it can be serviced
+      }
+    }
+
     // check to make sure the job can be queued
     if (jobQueue.size() < qSize) {
       jobQueue.push(job);  // the job is able to enter the queue.
     } else {
       ++totalRejects;
-    }
-
-    // pick the service node to send the current job to
-    int receiver{dispatcher(nodes, alg, job)};
-
-    // send the job to the selected node
-    if (nodes[receiver].enterNode(job)) {
-      double tempArr{jobQueue.front().getArrival()};
-      totalDelay += (delay - tempArr);    // add to the total delay in queue
-      totalServ += job.getServiceTime();  // add this st
-      lastDeparture = job.calcDeparture();
-
-      jobQueue.pop();  // remove the job from the queue as it can be serviced
     }
   }
 
@@ -407,12 +409,13 @@ NodeStats sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   return sqmsStats;
 }
 
-void printAvgStats(NodeStats statistics) {
+void printAvgStats(NodeStats statistics, double ia, double st) {
   // order: nNodes, util, q, jobs, delay, wait, reject
   std::cout << statistics.nNodes << "," << statistics.avgUtil << ","
             << statistics.avgQueue << "," << statistics.avgJobs << ","
             << statistics.avgDelay << "," << statistics.avgWait << ","
-            << statistics.avgThruput << "," << statistics.reject << std::endl;
+            << statistics.avgThruput << "," << statistics.reject << "," << ia
+            << "," << st << std::endl;
 }
 
 void printStats(node_list nodes, int totalRejects, int nJobs) {
@@ -479,15 +482,15 @@ void accumStats(node_list nodes, int nJobs, Model modelName,
   data.close();
 }
 
-
 void consistencyCheck(NodeStats stats) {
-    const double e = 1e-5; // prob. shouldn't compare floats directly
-    double expectedWait{stats.avgDelay + stats.avgSt};
-    double distance{std::abs(expectedWait - stats.avgWait)};
-    if (distance > e) {
-        std::cout << "sim is not consistent" << std::endl;
-        std::cout << "avgWait: " << stats.avgWait << std::endl;
-        std::cout << "avgDelay: " << stats.avgDelay << std::endl;
-        std::cout << "avgService: " << stats.avgSt << std::endl;
-    }
+  const double e = 1e-5;  // prob. shouldn't compare floats directly
+  double expectedWait{stats.avgDelay + stats.avgSt};
+  double distance{std::abs(expectedWait - stats.avgWait)};
+  if (distance > e) {
+    std::cout << "SIMULATION HAS INCONSISTENCIES" << std::endl;
+    std::cout <<std::setprecision(9) << "avgWait: " << stats.avgWait << std::endl;
+    std::cout << "avgDelay: " << stats.avgDelay << std::endl;
+    std::cout << "avgService: " << stats.avgSt << std::endl;
+    std::cout << "expected wait: " << expectedWait << std::endl;
+  }
 }
