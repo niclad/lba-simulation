@@ -163,7 +163,7 @@ class ServiceNode {
 
   void updateAAQ();
 
-  double getAAQ();
+  double getAAQ() const;
 
 
  private:
@@ -211,7 +211,7 @@ class ServiceNode {
   mutable double totDelay;
 
   // queue avg length (from jobQueue)
-  double avgQueue;
+  mutable double avgQueue;
 
   // the latency of the node
   double latency;

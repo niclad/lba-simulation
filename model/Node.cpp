@@ -1,7 +1,7 @@
 #include "Node.h"
 
-#include <iomanip>
 #include <cmath>
+#include <iomanip>
 
 #include "Job.h"
 
@@ -35,7 +35,7 @@ void ServiceNode::updateUtil(double mostRecentDep) {
 
 bool ServiceNode::enterQueue(Job& job) {
   if (jobQueue.size() < maxQueueSz) {
-    job.setDelay(lastDeparture);
+    job.setDelay(serviceDeparture);
     jobQueue.push(job);
     avgQueue += 1;
 
@@ -164,9 +164,7 @@ void ServiceNode::updateTput() { thruput = numJobsProcessed / lastDeparture; };
 
 double ServiceNode::getTput() const { return thruput; }
 
-double ServiceNode::getAAQ() {
-  return avgQueue / numJobsProcessed;
-}
+double ServiceNode::getAAQ() const { return avgQueue / numJobsProcessed; }
 
 std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
   // choose to print the delay and queue length.
@@ -186,4 +184,3 @@ std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
 
   return out;
 }
-
