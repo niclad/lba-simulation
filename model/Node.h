@@ -161,6 +161,11 @@ class ServiceNode {
 
   double getTput() const;
 
+  void updateAAQ();
+
+  double getAAQ();
+
+
  private:
   /**
    * @brief Calculate the average service time
@@ -204,6 +209,9 @@ class ServiceNode {
 
   // the total delay for all the jobs processed
   mutable double totDelay;
+
+  // queue avg length (from jobQueue)
+  double avgQueue;
 
   // the latency of the node
   double latency;

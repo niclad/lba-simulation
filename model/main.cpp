@@ -332,6 +332,10 @@ NodeStats mqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   mqmsStats.reject = rejectRatio;
   consistencyCheck(mqmsStats);
 
+  std::cout << "--------------------------------------------------------" <<std::endl;
+  printStats(nodes, totalRejects, nJobs);
+
+
   return mqmsStats;
 }
 

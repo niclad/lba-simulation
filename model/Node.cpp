@@ -13,6 +13,7 @@ ServiceNode::ServiceNode(int id)
       numJobsProcessed{0},
       lastDeparture{0.0},
       totDelay{0.0},
+      avgQueue{0},
       latency{0.0},
       thruput{0.0} {}
 
@@ -24,6 +25,7 @@ ServiceNode::ServiceNode(int id, size_t maxQueueSz)
       numJobsProcessed{0},
       lastDeparture{0.0},
       totDelay{0.0},
+      avgQueue{0},
       latency{0.0},
       thruput{0.0} {}
 
@@ -35,6 +37,7 @@ bool ServiceNode::enterQueue(Job& job) {
   if (jobQueue.size() < maxQueueSz) {
     job.setDelay(lastDeparture);
     jobQueue.push(job);
+    avgQueue += 1;
 
     // process the existing queue now that a new arrival has come
     // problem, how to handle case where queue is full
@@ -160,6 +163,10 @@ int ServiceNode::getMaxQueueLen() const { return maxQueueSz; }
 void ServiceNode::updateTput() { thruput = numJobsProcessed / lastDeparture; };
 
 double ServiceNode::getTput() const { return thruput; }
+
+double ServiceNode::getAAQ() {
+  return avgQueue / numJobsProcessed;
+}
 
 std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
   // choose to print the delay and queue length.
