@@ -52,24 +52,24 @@ function ProgressBar {
 for m in "${models[@]}"; do
 	# loop algorithms
 	for a in "${algs[@]}"; do
-		echo "\nRunning ${m} sim with alg ${a}"
+		echo -e "\nRunning ${m} sim with alg ${a}"
 
 		# test arrival variation
-		filename=${m}-${s}-${a}-arrival.csv
+		filename=${m}-${a}-arrival.csv
 		echo "n_nodes,avg_util,avg_q,avg_jobs,avg_delay,avg_wait,avg_tput,reject" >$filename
 		for ((arr = 100; arr <= $end_arr; arr += 100)); do
 			ProgressBar ${arr} ${end_arr}
-			./main.out $arr $static_serv $a $s $m >>$filename
+			./main.out $arr $static_serv $a 1234 $m >>$filename
 		done
 
 		# test service variation
-		filename=${m}-${s}-${a}-service.csv
+		filename=${m}-${a}-service.csv
 		echo "n_nodes,avg_util,avg_q,avg_jobs,avg_delay,avg_wait,avg_tput,reject" >$filename
 		for ((serv = 100; serv <= $end_serv; serv += 100)); do
 			ProgressBar ${serv} ${end_serv}
-			./main.out $static_arr $serv $a $s $m >>$filename
+			./main.out $static_arr $serv $a 1234 $m >>$filename
 		done
 	done
 done
 
-echo "DONE!"
+echo -e "\nDONE!"
