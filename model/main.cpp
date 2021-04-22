@@ -42,6 +42,8 @@ std::string alg{""};
 
 double SERV_MEAN{0.0};
 double IA_AVG{0.0};
+static double prevArr{START};     // the previous arrival time
+
 
 // NOTE: surely there must be a better way to deal with the below
 const struct algs_t {
@@ -151,7 +153,7 @@ int main(int argc, char* argv[]) {
 
   int qSize{100};
   int nJobs{10000};
-  long int seeds[3] = {12345, 56789, 87654321};
+  long int seeds[3] = {453324, 343252, 985043254};
   struct NodeStats stats = {0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
   // test using a new seed each time
@@ -170,6 +172,7 @@ int main(int argc, char* argv[]) {
       NodeStats tempStats = sqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
       stats = sumStats(tempStats, stats);
     }
+    prevArr = START;
   }
 
   stats = avgStatStats(stats, 3);
@@ -179,7 +182,6 @@ int main(int argc, char* argv[]) {
 // get a service time for a job
 // ia == interarrival
 double getArrival(double ia) {
-  static double prevArr{START};     // the previous arrival time
   double st{Uniform(0, (ia * 2))};  // choose an arrival time
   prevArr += st;                    // update the the
 
@@ -330,10 +332,10 @@ NodeStats mqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   double rejectRatio{static_cast<double>(totalRejects) / nJobs};
   NodeStats mqmsStats{avgStats(nodes)};
   mqmsStats.reject = rejectRatio;
-  consistencyCheck(mqmsStats);
+  // consistencyCheck(mqmsStats);
 
-  std::cout << "--------------------------------------------------------" <<std::endl;
-  printStats(nodes, totalRejects, nJobs);
+  // std::cout << "--------------------------------------------------------" <<std::endl;
+  // printStats(nodes, totalRejects, nJobs);
 
 
   return mqmsStats;
@@ -408,7 +410,7 @@ NodeStats sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   sqmsStats.avgThruput = processedJobs / lastDeparture;
   sqmsStats.avgQueue = (processedJobs / lastDeparture) * sqmsStats.avgDelay;
   sqmsStats.reject = rejectRatio;
-  consistencyCheck(sqmsStats);
+  // consistencyCheck(sqmsStats);
 
   return sqmsStats;
 }
