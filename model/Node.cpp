@@ -1,6 +1,7 @@
 #include "Node.h"
 
 #include <iomanip>
+#include <cmath>
 
 #include "Job.h"
 
@@ -178,3 +179,4 @@ std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
 
   return out;
 }
+

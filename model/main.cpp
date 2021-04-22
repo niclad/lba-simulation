@@ -27,6 +27,7 @@ typedef struct NodeStats {
   double avgDelay;
   double avgWait;
   double avgThruput;
+  double avgSt;
   double reject;
 } NodeStats;
 
@@ -78,6 +79,7 @@ double getArrival();
 node_list buildNodeList(int nNodes, size_t qSz);
 node_idx dispatcher(node_list nodes, lba_func lba);
 void log_sim(lba_func lba, int nNodes, int qSize, int nJobs, node_list nodes);
+void consistencyCheck(NodeStats stats);
 
 /* TO-DO:
  * Implement the function declartions below this list....
@@ -259,12 +261,14 @@ NodeStats avgStats(node_list nodes) {
   // gather sums for all the results
   for (ServiceNode node : nodes) {
     double tempDelay{node.calcAvgDelay()};
+
     tempStats.avgUtil += node.getUtil();
     tempStats.avgQueue += node.calcAvgQueue();
     tempStats.avgJobs += node.getNumProcJobs();
     tempStats.avgDelay += tempDelay;
     tempStats.avgWait += node.calcAvgSt() + tempDelay;
     tempStats.avgThruput += node.getTput();
+    stats.avgSt += node.calcAvgSt();
   }
 
   size_t numNodes{nodes.size()};
@@ -274,6 +278,7 @@ NodeStats avgStats(node_list nodes) {
   tempStats.avgDelay /= numNodes;
   tempStats.avgWait /= numNodes;
   tempStats.avgThruput /= numNodes;
+  stats.avgSt /= numNodes;
 
   return tempStats;
 }
@@ -325,6 +330,7 @@ NodeStats mqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   double rejectRatio{static_cast<double>(totalRejects) / nJobs};
   NodeStats mqmsStats{avgStats(nodes)};
   mqmsStats.reject = rejectRatio;
+  consistencyCheck(stats);
 
   return mqmsStats;
 }
@@ -395,6 +401,7 @@ NodeStats sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   sqmsStats.avgThruput = processedJobs / lastDeparture;
   sqmsStats.avgQueue = (processedJobs / lastDeparture) * sqmsStats.avgDelay;
   sqmsStats.reject = rejectRatio;
+  consistencyCheck(stats);
 
   return sqmsStats;
 }
@@ -469,4 +476,17 @@ void accumStats(node_list nodes, int nJobs, Model modelName,
   }
 
   data.close();
+}
+
+
+void consistencyCheck(NodeStats stats) {
+    const double e = 1e-5; // prob. shouldn't compare floats directly
+    double expectedWait{stats.avgDelay + stats.avgSt};
+    double distance{std::abs(expectedWait - stats.avgWait)};
+    if (distance > e) {
+        std::cout << "sim is not consistent" << std::endl;
+        std::cout << "avgWait: " << stats.avgWait << std::endl;
+        std::cout << "avgDelay: " << stats.avgDelay << std::endl;
+        std::cout << "avgService: " << stats.avgSt << std::endl;
+    }
 }
