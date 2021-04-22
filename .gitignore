@@ -17,3 +17,7 @@ model/lba-data.csv
 util/algsdist.png
 model/*.csv
 util/*.png
+model/sqms.zip
+model/mqms.zip
+model/data.zip
+model/service_data.zip
