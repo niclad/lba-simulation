@@ -22,11 +22,17 @@ typedef int lba_alg;
 typedef struct NodeStats {
   int nNodes;
   double avgUtil;
+  double varUtil;
   double avgQueue;
+  double varQueue;
   double avgJobs;
+  double varJobs;
   double avgDelay;
+  double varDelay;
   double avgWait;
+  double varWait;
   double avgThruput;
+  double varThruput;
   double avgSt;
   double reject;
 } NodeStats;
@@ -99,11 +105,17 @@ NodeStats avgStats(node_list nodes);
 
 NodeStats sumStats(NodeStats src, NodeStats dst) {
   dst.avgDelay += src.avgDelay;
+  dst.varDelay += src.varDelay;
   dst.avgJobs += src.avgJobs;
+  dst.varJobs += src.varJobs;
   dst.avgQueue += src.avgQueue;
+  dst.varQueue += src.varQueue;
   dst.avgThruput += src.avgThruput;
+  dst.varThruput += src.varThruput;
   dst.avgUtil += src.avgUtil;
+  dst.varUtil += src.varUtil;
   dst.avgWait += src.avgWait;
+  dst.varWait += src.varWait;
   dst.nNodes += src.nNodes;
   dst.reject += src.reject;
 
@@ -112,11 +124,17 @@ NodeStats sumStats(NodeStats src, NodeStats dst) {
 
 NodeStats avgStatStats(NodeStats sts, int nStatSets) {
   sts.avgDelay /= nStatSets;
+  sts.varDelay /= nStatSets;
   sts.avgJobs /= nStatSets;
+  sts.varJobs /= nStatSets;
   sts.avgQueue /= nStatSets;
+  sts.varQueue /= nStatSets;
   sts.avgThruput /= nStatSets;
+  sts.varThruput /= nStatSets;
   sts.avgUtil /= nStatSets;
+  sts.varUtil /= nStatSets;
   sts.avgWait /= nStatSets;
+  sts.varWait /= nStatSets;
   sts.nNodes /= nStatSets;
   sts.reject /= nStatSets;
 
@@ -273,6 +291,7 @@ NodeStats avgStats(node_list nodes) {
     tempStats.avgSt += node.calcAvgSt();
   }
 
+  // find the averages of the results
   size_t numNodes{nodes.size()};
   tempStats.avgUtil /= numNodes;
   tempStats.avgQueue /= numNodes;
@@ -281,6 +300,25 @@ NodeStats avgStats(node_list nodes) {
   tempStats.avgWait /= numNodes;
   tempStats.avgThruput /= numNodes;
   tempStats.avgSt /= numNodes;
+
+  // compute the variances
+  for (ServiceNode node : nodes) {
+    double tempDelay{node.calcAvgDelay()};
+
+    tempStats.varUtil += (node.getUtil() - tempStats.avgUtil) * (node.getUtil() - tempStats.avgUtil);
+    tempStats.varQueue += (node.calcAvgQueue() - tempStats.avgQueue) * (node.calcAvgQueue() - tempStats.avgQueue);
+    tempStats.varJobs += (node.getNumProcJobs() - tempStats.avgJobs) * (node.getNumProcJobs() - tempStats.avgJobs);
+    tempStats.varDelay += (tempDelay - tempStats.avgDelay) * (tempDelay - tempStats.avgDelay);
+    tempStats.varWait += ((node.calcAvgSt() + tempDelay) - tempStats.avgWait) * ((node.calcAvgSt() + tempDelay) - tempStats.avgWait);
+    tempStats.varThruput += (node.getTput() - tempStats.avgThruput) * (node.getTput() - tempStats.avgThruput);    
+  }
+
+  tempStats.varUtil /= numNodes;
+  tempStats.varQueue /= numNodes;
+  tempStats.varJobs /= numNodes;
+  tempStats.varDelay /= numNodes;
+  tempStats.varWait /= numNodes;
+  tempStats.varThruput /= numNodes;
 
   return tempStats;
 }
@@ -418,9 +456,13 @@ NodeStats sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
 void printAvgStats(NodeStats statistics, double ia, double st) {
   // order: nNodes, util, q, jobs, delay, wait, reject
   std::cout << statistics.nNodes << "," << statistics.avgUtil << ","
-            << statistics.avgQueue << "," << statistics.avgJobs << ","
-            << statistics.avgDelay << "," << statistics.avgWait << ","
-            << statistics.avgThruput << "," << statistics.reject << "," << ia
+            << statistics.varUtil << ","
+            << statistics.avgQueue << "," << statistics.varQueue << ","
+            << statistics.avgJobs << "," << statistics.varJobs << ","
+            << statistics.avgDelay << "," << statistics.varDelay << ","
+            << statistics.avgWait << "," << statistics.varWait << ","
+            << statistics.avgThruput << "," << statistics.varThruput << ","
+            << statistics.reject << "," << ia
             << "," << st << std::endl;
 }
 

@@ -56,7 +56,7 @@ for m in "${models[@]}"; do
 
 		# test arrival variation
 		filename=${m}-${a}-arrival.csv
-		echo "n_nodes,avg_util,avg_q,avg_jobs,avg_delay,avg_wait,avg_tput,reject" >$filename
+		echo "n_nodes,avg_util,var_util,avg_q,var_q,avg_jobs,var_jobs,avg_delay,var_delay,avg_wait,var_wait,avg_tput,var_tput,reject,inter,serv" >$filename
 		for ((arr = 100; arr <= $end_arr; arr += 100)); do
 			ProgressBar ${arr} ${end_arr}
 			./main.out $arr $static_serv $a 1234 $m >>$filename
@@ -64,7 +64,7 @@ for m in "${models[@]}"; do
 
 		# test service variation
 		filename=${m}-${a}-service.csv
-		echo "n_nodes,avg_util,avg_q,avg_jobs,avg_delay,avg_wait,avg_tput,reject" >$filename
+		echo "n_nodes,avg_util,var_util,avg_q,var_q,avg_jobs,var_jobs,avg_delay,var_delay,avg_wait,var_wait,avg_tput,var_tput,reject,inter,serv" >$filename
 		for ((serv = 100; serv <= $end_serv; serv += 100)); do
 			ProgressBar ${serv} ${end_serv}
 			./main.out $static_arr $serv $a 1234 $m >>$filename
