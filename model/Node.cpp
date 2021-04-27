@@ -35,9 +35,8 @@ void ServiceNode::updateUtil(double mostRecentDep) {
 
 bool ServiceNode::enterQueue(Job& job) {
   if (jobQueue.size() < maxQueueSz) {
-    job.setDelay(serviceDeparture);
+    job.setDelay(lastDeparture);
     jobQueue.push(job);
-    avgQueue += 1;
 
     // process the existing queue now that a new arrival has come
     // problem, how to handle case where queue is full
@@ -75,13 +74,14 @@ bool ServiceNode::enterNode(Job job) {
 
   // job can enter, so update stats
   if (isEnter) {
-    // update the last Job's departure time
-    lastDeparture = job.calcDeparture();
     ++numJobsProcessed;                 // this Job can be processed
     updateTotST(job.getServiceTime());  // increase the total ST
-    updateUtil(lastDeparture);          // update utilization
+    updateUtil(job.calcDeparture());    // update utilization
     totDelay += job.getDelay();         // update the delay.
     updateTput();                       // update the throughput
+
+    // update the last Job's departure time
+    lastDeparture = job.calcDeparture();
 
     // if the queue is empty, this job will depart first
     if (jobQueue.size() == 0) {
