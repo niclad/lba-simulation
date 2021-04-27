@@ -166,6 +166,8 @@ double ServiceNode::getTput() const { return thruput; }
 
 double ServiceNode::getAAQ() const { return avgQueue / numJobsProcessed; }
 
+double ServiceNode::getLD() const { return lastDeparture; }
+
 std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
   // choose to print the delay and queue length.
   if (node.getMaxQueueLen() > 0) {

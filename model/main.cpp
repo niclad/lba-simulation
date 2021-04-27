@@ -402,6 +402,7 @@ NodeStats sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   double totalDelay{0.0};     // total queue length
   double totalServ{0.0};      // total service times
   double lastDeparture{0.0};  // last job's departure
+  double totalTime{0.0};
 
   // the dispatcher's queue
   std::queue<Job> jobQueue;
@@ -409,7 +410,7 @@ NodeStats sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   // run for the number of jobs
   for (int ii = 0; ii < nJobs; ii++) {
     Job job(getArrival(IA_AVG), getService(SERV_MEAN));
-    double delay{job.getArrival()};
+    double currArr{job.getArrival()};
 
     // pick the service node to send the current job to
     int receiver{dispatcher(nodes, alg, job)};
@@ -417,9 +418,13 @@ NodeStats sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
     // if there's a non-empty queue, check to see if the first job can be sent
     if (jobQueue.size() > 0) {
       // send the job to the selected node
+      double tempDep{nodes[receiver].getLD()};
       if (nodes[receiver].enterNode(job)) {
         double tempArr{jobQueue.front().getArrival()};
-        totalDelay += (delay - tempArr);    // add to the total delay in queue
+
+        if (tempDep > tempArr) {
+          totalDelay += (tempDep - tempArr);    // add to the total delay in queue
+        }
         totalServ += job.getServiceTime();  // add this st
         lastDeparture = job.calcDeparture();
 

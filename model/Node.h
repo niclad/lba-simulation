@@ -165,6 +165,8 @@ class ServiceNode {
 
   double getAAQ() const;
 
+  double getLD() const;
+
 
  private:
   /**
