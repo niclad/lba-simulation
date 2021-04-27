@@ -167,6 +167,8 @@ class ServiceNode {
 
   double getLD() const;
 
+  double getTST() const;
+
 
  private:
   /**

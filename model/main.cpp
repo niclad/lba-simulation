@@ -186,7 +186,7 @@ int main(int argc, char* argv[]) {
 
     // testing sqms simulation
     if (std::string(argv[5]) == "sqms") {
-      qSize *= nNodes;  // have same queue length
+      qSize = 1000;
       NodeStats tempStats = sqmsSimulation(nNodes, lbaChoice, qSize, nJobs);
       stats = sumStats(tempStats, stats);
     }
@@ -373,7 +373,9 @@ NodeStats mqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   // consistencyCheck(mqmsStats);
 
   // std::cout << "--------------------------------------------------------" <<std::endl;
-  // printStats(nodes, totalRejects, nJobs);
+  if (1) {
+    printStats(nodes, totalRejects, nJobs);
+  }
 
 
   return mqmsStats;
@@ -403,7 +405,8 @@ NodeStats sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   double totalServ{0.0};      // total service times
   double lastDeparture{0.0};  // last job's departure
   double totalTime{0.0};
-  int ns = 0; // keep a balance of the success of the dispatcher should be 0 if an idle node is picked everytime
+  int ns{0}; // keep a balance of the success of the dispatcher should be 0 if an idle node is picked everytime
+  size_t totalQueue{0}; // total number of items that queued.
   // the dispatcher's queue
   std::queue<Job> jobQueue;
 
@@ -436,6 +439,9 @@ NodeStats sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
       }
     }
 
+    totalQueue += jobQueue.size();
+
+
     // check to make sure the job can be queued
     if (jobQueue.size() < qSize) {
       jobQueue.push(job);  // the job is able to enter the queue.
@@ -462,11 +468,16 @@ NodeStats sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   // consistencyCheck(sqmsStats);
 
   // DEBUGGING STATS - set to 0 to surpress output
-  if (1) {
+  if (0) {
+    double otherQueue {(double)totalQueue/nJobs};
     std::cout << "totalDelay=" << totalDelay << " avgDelay=" << sqmsStats.avgDelay 
               << " totalServ=" << totalServ << " avgSt=" << totalServ/processedJobs 
               << " avgQ=" << sqmsStats.avgQueue << " attempts to enter=" << ns 
-              << " maxQ=" << mxQueue << std::endl;
+              << " maxQ=" << mxQueue 
+              << " AvgQueue other=" << otherQueue 
+              << std::boolalpha << " queues match: " 
+              << (otherQueue == sqmsStats.avgQueue) << std::endl;
+    consistencyCheck(sqmsStats);
     printStats(nodes, totalRejects, nJobs);
   }
 

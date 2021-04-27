@@ -72,6 +72,7 @@ bool ServiceNode::enterNode(Job job) {
   // bitwise OR to ensure that both cases are covered
   // (w/ and w/o queueueus)
   isEnter |= (jobQueue.size() == 0);
+
   // job can enter, so update stats
   if (isEnter) {
     // update the last Job's departure time
@@ -168,12 +169,14 @@ double ServiceNode::getAAQ() const { return avgQueue / numJobsProcessed; }
 
 double ServiceNode::getLD() const { return lastDeparture; }
 
+double ServiceNode::getTST() const { return totST; }
+
 std::ostream& operator<<(std::ostream& out, const ServiceNode& node) {
   // choose to print the delay and queue length.
   if (node.getMaxQueueLen() > 0) {
     out << "ID: " << std::setw(2) << node.getId() << ", util: " << std::setw(7)
         << node.getUtil() << ", njobs: " << std::setw(6)
-        << node.getNumProcJobs() << ", avg_s: " << std::setw(6)
+        << node.getNumProcJobs() << ", totst: " << node.getTST() << ", ld=" << node.getLD() << ", avg_s: " << std::setw(6)
         << node.calcAvgSt() << ", avg_q: " << std::setw(4)
         << node.calcAvgQueue() << ", avg_d: " << std::setw(6)
         << node.calcAvgDelay();
