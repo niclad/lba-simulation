@@ -403,9 +403,11 @@ NodeStats sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   double totalServ{0.0};      // total service times
   double lastDeparture{0.0};  // last job's departure
   double totalTime{0.0};
-
+  int ns = 0; // keep a balance of the success of the dispatcher should be 0 if an idle node is picked everytime
   // the dispatcher's queue
   std::queue<Job> jobQueue;
+
+  size_t mxQueue = 0;
 
   // run for the number of jobs
   for (int ii = 0; ii < nJobs; ii++) {
@@ -417,9 +419,11 @@ NodeStats sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
 
     // if there's a non-empty queue, check to see if the first job can be sent
     if (jobQueue.size() > 0) {
+      ++ns;
       // send the job to the selected node
       double tempDep{nodes[receiver].getLD()};
       if (nodes[receiver].enterNode(job)) {
+        --ns;
         double tempArr{jobQueue.front().getArrival()};
 
         if (tempDep > tempArr) {
@@ -438,6 +442,8 @@ NodeStats sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
     } else {
       ++totalRejects;
     }
+
+    if (mxQueue < jobQueue.size()) { mxQueue = jobQueue.size(); }
   }
 
   // calculate the reject ratio
@@ -449,11 +455,21 @@ NodeStats sqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
 
   // calculate the delay and wait for sqms on outside queue
   sqmsStats.avgDelay = totalDelay / processedJobs;
-  sqmsStats.avgWait = sqmsStats.avgDelay + (totalServ / processedJobs);
+  sqmsStats.avgWait = sqmsStats.avgDelay + (sqmsStats.avgSt);
   sqmsStats.avgThruput = processedJobs / lastDeparture;
   sqmsStats.avgQueue = (processedJobs / lastDeparture) * sqmsStats.avgDelay;
   sqmsStats.reject = rejectRatio;
   // consistencyCheck(sqmsStats);
+
+  // DEBUGGING STATS - set to 0 to surpress output
+  if (1) {
+    std::cout << "totalDelay=" << totalDelay << " avgDelay=" << sqmsStats.avgDelay 
+              << " totalServ=" << totalServ << " avgSt=" << totalServ/processedJobs 
+              << " avgQ=" << sqmsStats.avgQueue << " attempts to enter=" << ns 
+              << " maxQ=" << mxQueue << std::endl;
+    printStats(nodes, totalRejects, nJobs);
+  }
+
 
   return sqmsStats;
 }
