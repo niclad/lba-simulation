@@ -46,7 +46,7 @@ const double END{(double)DAY_SEC * 30};  // end time for the simulation
 enum class Model { mqms, sqms };         // model enums
 std::string alg{""};
 
-double SERV_MEAN{0.0};
+long int SERV_MEAN{0};
 double IA_AVG{0.0};
 static double prevArr{START};     // the previous arrival time
 
@@ -152,7 +152,7 @@ int main(int argc, char* argv[]) {
 
   // set up the passed cli
   IA_AVG = std::strtod(argv[1], 0);
-  SERV_MEAN = std::strtod(argv[2], 0);
+  SERV_MEAN = std::atol(argv[2]);
 
   int nNodes{10};  // set the number of nodes
 
@@ -206,9 +206,9 @@ double getArrival(double ia) {
   return prevArr;
 }
 
-double getService(double m) {
+double getService(long int m) {
   // get an exponential random variate in seconds
-  return Exponential(m);
+  return Exponential((double)m);
 }
 
 /**
@@ -373,7 +373,7 @@ NodeStats mqmsSimulation(int nNodes, lba_alg lba, size_t qSize, int nJobs) {
   // consistencyCheck(mqmsStats);
 
   // std::cout << "--------------------------------------------------------" <<std::endl;
-  if (1) {
+  if (0) {
     printStats(nodes, totalRejects, nJobs);
   }
 
